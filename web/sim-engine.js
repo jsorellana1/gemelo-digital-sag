@@ -151,9 +151,12 @@ async function runSimulation() {
   try {
     const pyodide = await pyodideReady;
     const params = collectParams();
-    pyodide.globals.set("_params", pyodide.toPy(params));
+    // Paso de parametros via JSON puro (sin pyodide.toPy/PyProxy) para evitar
+    // ambiguedad de conversion JS->Python entre versiones de Pyodide.
+    pyodide.globals.set("_params_json", JSON.stringify(params));
     const resultPy = pyodide.runPython(`
 import json
+_params = json.loads(_params_json)
 result = simulate_scenario(**_params)
 json.dumps(result, default=lambda o: o.tolist() if hasattr(o, "tolist") else str(o))
 `);
