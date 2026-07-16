@@ -12,7 +12,7 @@ const PY_FILES = [
   ["05_Dashboard/engine/simulator.py", "pyfiles/05_Dashboard/engine/simulator.py"],
   ["05_Dashboard/utils/__init__.py", "pyfiles/05_Dashboard/utils/__init__.py"],
   ["05_Dashboard/utils/perf_logger.py", "pyfiles/05_Dashboard/utils/perf_logger.py"],
-  ["01_Data/Cache/bola_delta_tph.json", "pyfiles/01_Data/Cache/bola_delta_tph.json"],
+  ["01_Data/Cache/bola_delta_tph.json", "pyfiles/calibration/bola_delta_tph.json"],
 ];
 
 const statusEl = document.getElementById("status");
