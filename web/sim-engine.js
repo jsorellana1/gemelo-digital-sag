@@ -15,6 +15,8 @@ const PY_FILES = [
   ["01_Data/Cache/bola_delta_tph.json", "pyfiles/calibration/bola_delta_tph.json"],
 ];
 
+const P90 = { SAG1: 1454.0, SAG2: 2516.0 };
+
 const statusEl = document.getElementById("status");
 const runBtn = document.getElementById("run");
 let pyodideReady = null;
@@ -33,7 +35,7 @@ async function ensureDir(pyodide, path) {
 async function initPyodide() {
   setStatus("Descargando Pyodide (WebAssembly)…");
   const pyodide = await loadPyodide();
-  setStatus("Cargando numpy/pandas…");
+  setStatus("Cargando numpy/pandas/scipy…");
   await pyodide.loadPackage(["numpy", "pandas", "scipy"]);
 
   pyodide.FS.mkdir("/app");
@@ -59,19 +61,47 @@ sys.path.insert(0, "/app/05_Dashboard")
   return pyodide;
 }
 
-function bindRangeDisplay(id, displayId, suffix) {
-  const el = document.getElementById(id);
-  const disp = document.getElementById(displayId);
-  const update = () => { disp.textContent = el.value + (suffix || ""); };
-  el.addEventListener("input", update);
-  update();
+// ── Controles duales (slider <-> input numerico) ───────────────────────────
+
+function bindDual(id) {
+  const range = document.getElementById(id);
+  const num = document.getElementById(id + "_num");
+  if (!range || !num) return;
+  range.addEventListener("input", () => { num.value = range.value; });
+  num.addEventListener("input", () => {
+    let v = parseFloat(num.value);
+    if (Number.isNaN(v)) return;
+    const min = parseFloat(range.min), max = parseFloat(range.max);
+    if (v < min) v = min;
+    if (v > max) v = max;
+    range.value = v;
+  });
+  num.addEventListener("change", () => { num.value = range.value; });
 }
 
-bindRangeDisplay("pila_sag1_pct", "v_pila1", "%");
-bindRangeDisplay("pila_sag2_pct", "v_pila2", "%");
-bindRangeDisplay("rate_sag1_pct", "v_rate1", "%");
-bindRangeDisplay("rate_sag2_pct", "v_rate2", "%");
-bindRangeDisplay("duracion_t8_h", "v_t8", "h");
+const DUAL_IDS = [
+  "pila_sag1_pct", "pila_sag2_pct", "rate_sag1_pct", "rate_sag2_pct",
+  "cv315_manual_tph", "cv316_manual_tph", "t1_manual_tph", "t3_frac_pct",
+  "duracion_t8_h", "horizonte_horas",
+  "feed_recovery_time_min", "sag_ramp_up_time_min", "sag_ramp_down_time_min",
+  "one_ball_capacity_factor",
+];
+DUAL_IDS.forEach(bindDual);
+
+function updateConditionals() {
+  const cvMode = radioValue("cv_mode");
+  document.getElementById("cv_manual_block").classList.toggle("show", cvMode === "manual");
+  const t1Mode = document.getElementById("t1_mode").value;
+  document.getElementById("t1_manual_block").classList.toggle("show", t1Mode === "manual");
+}
+document.querySelectorAll('input[name="cv_mode"]').forEach(el => el.addEventListener("change", updateConditionals));
+document.getElementById("t1_mode").addEventListener("change", updateConditionals);
+updateConditionals();
+
+function radioValue(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
 
 function collectParams() {
   return {
@@ -85,12 +115,28 @@ function collectParams() {
     ch2_on: document.getElementById("ch2_on").checked,
     bolas_sag1: document.getElementById("bolas_sag1").value,
     bolas_sag2: document.getElementById("bolas_sag2").value,
-    correa315_estado: document.getElementById("correa315_estado").value,
-    correa316_estado: document.getElementById("correa316_estado").value,
+    correa315_estado: radioValue("correa315_estado"),
+    correa316_estado: radioValue("correa316_estado"),
     duracion_t8_h: parseFloat(document.getElementById("duracion_t8_h").value),
     horizonte_horas: parseFloat(document.getElementById("horizonte_horas").value),
+    cv_mode: radioValue("cv_mode"),
+    cv315_manual_tph: parseFloat(document.getElementById("cv315_manual_tph").value),
+    cv316_manual_tph: parseFloat(document.getElementById("cv316_manual_tph").value),
+    t1_mode: document.getElementById("t1_mode").value,
+    t1_manual_tph: parseFloat(document.getElementById("t1_manual_tph").value),
+    t3_frac: parseFloat(document.getElementById("t3_frac_pct").value) / 100.0,
+    distribucion_t1: document.getElementById("distribucion_t1").value,
+    feed_recovery_mode: document.getElementById("feed_recovery_mode").value,
+    feed_recovery_time_min: parseFloat(document.getElementById("feed_recovery_time_min").value),
+    sag_ramp_up_time_min: parseFloat(document.getElementById("sag_ramp_up_time_min").value),
+    sag_ramp_down_time_min: parseFloat(document.getElementById("sag_ramp_down_time_min").value),
+    enforce_downstream_ball_capacity: document.getElementById("enforce_downstream_ball_capacity").checked,
+    one_ball_capacity_factor: parseFloat(document.getElementById("one_ball_capacity_factor").value),
+    redistribution_enabled: document.getElementById("redistribution_enabled").checked,
   };
 }
+
+// ── Render: KPIs / recomendacion / graficos estaticos ──────────────────────
 
 function renderKpis(result) {
   const kpisEl = document.getElementById("kpis");
@@ -144,6 +190,108 @@ function renderCharts(result) {
   }, { responsive: true, displayModeBar: false });
 }
 
+// ── Render: vista dinamica de alimentadores + pilas (drena/aumenta) ────────
+// Silo animado por SAG: barra = nivel de pila (%), flecha superior = alimentador
+// (CV315/CV316 hacia la pila), flecha inferior = consumo del molino (drenaje).
+// Color de la barra: verde = pila aumentando, rojo = pila drenando, azul = estable.
+
+function barColor(net) {
+  if (net > 1) return "#3ea34d";
+  if (net < -1) return "#d9534f";
+  return "#3574f0";
+}
+
+function dynamicAnnotations(result, i, tAll) {
+  const inflow1 = result.cv315[i] ?? 0;
+  const outflow1 = result.tph_sag1[i] ?? 0;
+  const inflow2 = result.cv316[i] ?? 0;
+  const outflow2 = result.tph_sag2[i] ?? 0;
+  const arrowW = (v, cap) => Math.max(1, Math.min(7, 1 + (v / cap) * 6));
+  return [
+    { x: "SAG1", y: 112, xref: "x", yref: "y", text: `Alimentador CV315<br>${inflow1.toFixed(0)} TPH`,
+      showarrow: true, ax: 0, ay: -26, arrowcolor: "#3ea34d", arrowwidth: arrowW(inflow1, P90.SAG1),
+      arrowhead: 2, font: { color: "#3ea34d", size: 11 }, align: "center" },
+    { x: "SAG1", y: -12, xref: "x", yref: "y", text: `Consumo molino SAG1<br>${outflow1.toFixed(0)} TPH`,
+      showarrow: true, ax: 0, ay: 24, arrowcolor: "#e0803a", arrowwidth: arrowW(outflow1, P90.SAG1),
+      arrowhead: 2, font: { color: "#e0803a", size: 11 }, align: "center" },
+    { x: "SAG2", y: 112, xref: "x", yref: "y", text: `Alimentador CV316<br>${inflow2.toFixed(0)} TPH`,
+      showarrow: true, ax: 0, ay: -26, arrowcolor: "#3ea34d", arrowwidth: arrowW(inflow2, P90.SAG2),
+      arrowhead: 2, font: { color: "#3ea34d", size: 11 }, align: "center" },
+    { x: "SAG2", y: -12, xref: "x", yref: "y", text: `Consumo molino SAG2<br>${outflow2.toFixed(0)} TPH`,
+      showarrow: true, ax: 0, ay: 24, arrowcolor: "#e0803a", arrowwidth: arrowW(outflow2, P90.SAG2),
+      arrowhead: 2, font: { color: "#e0803a", size: 11 }, align: "center" },
+    { x: "SAG1", y: Math.max(6, result.pile_sag1[i] / 2), xref: "x", yref: "y",
+      text: `${result.pile_sag1[i].toFixed(0)}%`, showarrow: false, font: { color: "#fff", size: 15 } },
+    { x: "SAG2", y: Math.max(6, result.pile_sag2[i] / 2), xref: "x", yref: "y",
+      text: `${result.pile_sag2[i].toFixed(0)}%`, showarrow: false, font: { color: "#fff", size: 15 } },
+    { x: 0.5, xref: "paper", y: 1.14, yref: "paper", text: `t = ${tAll[i].toFixed(1)} h`,
+      showarrow: false, font: { color: "#9aa0ab", size: 11 } },
+  ];
+}
+
+function renderDynamic(result) {
+  const tAll = result.time;
+  const n = tAll.length;
+  const maxFrames = 120;
+  const step = Math.max(1, Math.ceil(n / maxFrames));
+  const idxs = [];
+  for (let i = 0; i < n; i += step) idxs.push(i);
+  if (idxs[idxs.length - 1] !== n - 1) idxs.push(n - 1);
+
+  const net = (cv, sag, i) => (result[cv][i] ?? 0) - (result[sag][i] ?? 0);
+  const i0 = idxs[0];
+
+  const baseTrace = {
+    x: ["SAG1", "SAG2"],
+    y: [result.pile_sag1[i0], result.pile_sag2[i0]],
+    type: "bar",
+    marker: { color: [barColor(net("cv315", "tph_sag1", i0)), barColor(net("cv316", "tph_sag2", i0))] },
+    width: 0.45,
+    showlegend: false,
+    hoverinfo: "skip",
+  };
+
+  const frames = idxs.map(i => ({
+    name: String(i),
+    data: [{
+      y: [result.pile_sag1[i], result.pile_sag2[i]],
+      marker: { color: [barColor(net("cv315", "tph_sag1", i)), barColor(net("cv316", "tph_sag2", i))] },
+    }],
+    layout: { annotations: dynamicAnnotations(result, i, tAll) },
+  }));
+
+  Plotly.newPlot("chart_dynamic", [baseTrace], {
+    paper_bgcolor: "#171a21", plot_bgcolor: "#171a21", font: { color: "#e8e8ea" },
+    yaxis: { range: [-25, 130], title: "% pila", gridcolor: "#262a33" },
+    xaxis: { title: "" },
+    margin: { t: 50, b: 40, l: 50, r: 20 },
+    height: 420,
+    annotations: dynamicAnnotations(result, i0, tAll),
+    updatemenus: [{
+      type: "buttons", showactive: false, x: 0, y: -0.22, xanchor: "left", yanchor: "top",
+      buttons: [
+        { label: "▶ Reproducir", method: "animate",
+          args: [null, { fromcurrent: true, frame: { duration: 150, redraw: true }, transition: { duration: 0 } }] },
+        { label: "⏸ Pausar", method: "animate",
+          args: [[null], { mode: "immediate", frame: { duration: 0, redraw: false } }] },
+      ],
+    }],
+    sliders: [{
+      x: 0.12, y: -0.22, len: 0.88, pad: { t: 20 },
+      currentvalue: { prefix: "t = ", suffix: " h", font: { color: "#e8e8ea", size: 11 } },
+      steps: idxs.map(i => ({
+        label: tAll[i].toFixed(0),
+        method: "animate",
+        args: [[String(i)], { mode: "immediate", frame: { duration: 0, redraw: true }, transition: { duration: 0 } }],
+      })),
+    }],
+  }, { responsive: true, displayModeBar: false });
+
+  Plotly.addFrames("chart_dynamic", frames);
+}
+
+// ── Ejecucion ────────────────────────────────────────────────────────────
+
 async function runSimulation() {
   runBtn.disabled = true;
   runBtn.textContent = "Simulando…";
@@ -163,6 +311,7 @@ json.dumps(result, default=lambda o: o.tolist() if hasattr(o, "tolist") else str
     const result = JSON.parse(resultPy);
     renderKpis(result);
     renderRecommendation(result);
+    renderDynamic(result);
     renderCharts(result);
     setStatus("Listo.");
   } catch (err) {

@@ -13,17 +13,25 @@
   header { padding: 16px 24px; border-bottom: 1px solid #262a33; }
   header h1 { font-size: 18px; margin: 0 0 4px; }
   header p { margin: 0; color: #9aa0ab; font-size: 13px; }
-  main { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 70px); }
-  #panel { padding: 20px; border-right: 1px solid #262a33; overflow-y: auto; }
-  #panel fieldset { border: 1px solid #262a33; border-radius: 8px; margin-bottom: 14px; padding: 10px 12px; }
-  #panel legend { font-size: 12px; color: #9aa0ab; padding: 0 6px; }
-  #panel label { display: block; font-size: 13px; margin: 8px 0 3px; }
-  #panel input[type=range] { width: 100%; }
-  #panel input[type=number], #panel select { width: 100%; box-sizing: border-box; padding: 5px 6px;
+  main { display: grid; grid-template-columns: 340px 1fr; gap: 0; min-height: calc(100vh - 70px); }
+  #panel { padding: 20px; border-right: 1px solid #262a33; overflow-y: auto; max-height: calc(100vh - 70px); }
+  #panel details { border: 1px solid #262a33; border-radius: 8px; margin-bottom: 10px; }
+  #panel summary { font-size: 12px; color: #c7cbd4; padding: 8px 10px; cursor: pointer; user-select: none;
+       text-transform: uppercase; letter-spacing: .04em; }
+  #panel summary:hover { color: #fff; }
+  #panel .fs-body { padding: 4px 10px 10px; }
+  #panel label { display: block; font-size: 12.5px; margin: 8px 0 3px; color: #c7cbd4; }
+  .dual { display: flex; align-items: center; gap: 8px; }
+  .dual input[type=range] { flex: 1; }
+  .dual input[type=number] { width: 68px; box-sizing: border-box; padding: 4px 5px;
+       background: #1a1d24; color: #e8e8ea; border: 1px solid #333844; border-radius: 6px; font-size: 12px; }
+  #panel select { width: 100%; box-sizing: border-box; padding: 5px 6px;
        background: #1a1d24; color: #e8e8ea; border: 1px solid #333844; border-radius: 6px; }
-  #panel .row-val { display:flex; justify-content:space-between; font-size:12px; color:#c7cbd4; }
   .toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
-  button#run { width: 100%; padding: 12px; margin-top: 8px; background: #3574f0; color: white;
+  .toggle-row label { margin: 0; }
+  .radio-row { display: flex; gap: 10px; margin: 4px 0 8px; flex-wrap: wrap; }
+  .radio-row label { display: flex; align-items: center; gap: 4px; font-size: 12px; margin: 0; }
+  button#run { width: 100%; padding: 12px; margin-top: 4px; background: #3574f0; color: white;
        border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
   button#run:disabled { background: #3a3f4b; cursor: wait; }
   #status { font-size: 12px; color: #9aa0ab; margin-top: 8px; min-height: 16px; }
@@ -36,9 +44,12 @@
   #recommendation h3 { margin: 0 0 6px; font-size: 14px; }
   #recommendation p { margin: 0; font-size: 13px; color: #c7cbd4; line-height: 1.5; }
   .chart { background: #171a21; border: 1px solid #262a33; border-radius: 8px; padding: 8px; margin-bottom: 16px; }
+  .chart h4 { margin: 4px 8px; font-size: 13px; color: #c7cbd4; font-weight: 600; }
   #banner { background: #2a2410; border: 1px solid #6b5c1e; color: #e8d98a; font-size: 12px;
        padding: 10px 16px; margin: 0; }
   a { color: #7aa2ff; }
+  .conditional { display: none; }
+  .conditional.show { display: block; }
 </style>
 </head>
 <body>
@@ -54,78 +65,155 @@
 
 <main>
   <div id="panel">
-    <fieldset>
-      <legend>Pilas</legend>
-      <label>Pila SAG1 (%) <span class="row-val"><span></span><span id="v_pila1"></span></span></label>
-      <input type="range" id="pila_sag1_pct" min="0" max="100" step="1" value="60">
-      <label>Pila SAG2 (%) <span class="row-val"><span></span><span id="v_pila2"></span></span></label>
-      <input type="range" id="pila_sag2_pct" min="0" max="100" step="1" value="60">
-    </fieldset>
 
-    <fieldset>
-      <legend>Produccion</legend>
-      <label>Rate SAG1 (%) <span class="row-val"><span></span><span id="v_rate1"></span></span></label>
-      <input type="range" id="rate_sag1_pct" min="0" max="120" step="1" value="95">
-      <label>Rate SAG2 (%) <span class="row-val"><span></span><span id="v_rate2"></span></span></label>
-      <input type="range" id="rate_sag2_pct" min="0" max="120" step="1" value="95">
-    </fieldset>
+    <details open>
+      <summary>Pilas</summary>
+      <div class="fs-body">
+        <label>Pila SAG1 (%)</label>
+        <div class="dual"><input type="range" id="pila_sag1_pct" min="0" max="100" step="1" value="60">
+          <input type="number" id="pila_sag1_pct_num" min="0" max="100" step="1" value="60"></div>
+        <label>Pila SAG2 (%)</label>
+        <div class="dual"><input type="range" id="pila_sag2_pct" min="0" max="100" step="1" value="60">
+          <input type="number" id="pila_sag2_pct_num" min="0" max="100" step="1" value="60"></div>
+      </div>
+    </details>
 
-    <fieldset>
-      <legend>Equipos</legend>
-      <div class="toggle-row"><label style="margin:0">SAG1 activo</label><input type="checkbox" id="sag1_activo" checked></div>
-      <div class="toggle-row"><label style="margin:0">SAG2 activo</label><input type="checkbox" id="sag2_activo" checked></div>
-      <div class="toggle-row"><label style="margin:0">Chancado 1</label><input type="checkbox" id="ch1_on" checked></div>
-      <div class="toggle-row"><label style="margin:0">Chancado 2</label><input type="checkbox" id="ch2_on" checked></div>
-    </fieldset>
+    <details open>
+      <summary>Produccion</summary>
+      <div class="fs-body">
+        <label>Rate SAG1 (%)</label>
+        <div class="dual"><input type="range" id="rate_sag1_pct" min="0" max="120" step="1" value="95">
+          <input type="number" id="rate_sag1_pct_num" min="0" max="120" step="1" value="95"></div>
+        <label>Rate SAG2 (%)</label>
+        <div class="dual"><input type="range" id="rate_sag2_pct" min="0" max="120" step="1" value="95">
+          <input type="number" id="rate_sag2_pct_num" min="0" max="120" step="1" value="95"></div>
+      </div>
+    </details>
 
-    <fieldset>
-      <legend>Bolas</legend>
-      <label>Bolas SAG1</label>
-      <select id="bolas_sag1">
-        <option value="sin_bola">Sin bola</option>
-        <option value="solo_411">Solo 411</option>
-        <option value="solo_412">Solo 412</option>
-        <option value="ambas_411_412">Ambas (411+412)</option>
-      </select>
-      <label>Bolas SAG2</label>
-      <select id="bolas_sag2">
-        <option value="sin_bola">Sin bola</option>
-        <option value="solo_511">Solo 511</option>
-        <option value="solo_512">Solo 512</option>
-        <option value="ambas_511_512">Ambas (511+512)</option>
-      </select>
-    </fieldset>
+    <details open>
+      <summary>Equipos</summary>
+      <div class="fs-body">
+        <div class="toggle-row"><label>SAG1 activo</label><input type="checkbox" id="sag1_activo" checked></div>
+        <div class="toggle-row"><label>SAG2 activo</label><input type="checkbox" id="sag2_activo" checked></div>
+        <div class="toggle-row"><label>Chancado 1</label><input type="checkbox" id="ch1_on" checked></div>
+        <div class="toggle-row"><label>Chancado 2</label><input type="checkbox" id="ch2_on" checked></div>
+      </div>
+    </details>
 
-    <fieldset>
-      <legend>Correas</legend>
-      <label>CV315</label>
-      <select id="correa315_estado">
-        <option value="activa">Activa</option>
-        <option value="reducida">Reducida</option>
-        <option value="inactiva">Inactiva</option>
-      </select>
-      <label>CV316</label>
-      <select id="correa316_estado">
-        <option value="activa">Activa</option>
-        <option value="reducida">Reducida</option>
-        <option value="inactiva">Inactiva</option>
-      </select>
-    </fieldset>
+    <details>
+      <summary>Bolas</summary>
+      <div class="fs-body">
+        <label>Bolas SAG1</label>
+        <select id="bolas_sag1">
+          <option value="sin_bola">Sin bola</option>
+          <option value="solo_411">Solo 411</option>
+          <option value="solo_412">Solo 412</option>
+          <option value="ambas_411_412">Ambas (411+412)</option>
+        </select>
+        <label>Bolas SAG2</label>
+        <select id="bolas_sag2">
+          <option value="sin_bola">Sin bola</option>
+          <option value="solo_511">Solo 511</option>
+          <option value="solo_512">Solo 512</option>
+          <option value="ambas_511_512">Ambas (511+512)</option>
+        </select>
+      </div>
+    </details>
 
-    <fieldset>
-      <legend>Ventana T8 / Horizonte</legend>
-      <label>Duracion T8 (h) <span class="row-val"><span></span><span id="v_t8"></span></span></label>
-      <input type="range" id="duracion_t8_h" min="0" max="48" step="0.5" value="0">
-      <label>Horizonte simulacion</label>
-      <select id="horizonte_horas">
-        <option value="2">2 h</option>
-        <option value="4">4 h</option>
-        <option value="8">8 h</option>
-        <option value="12">12 h</option>
-        <option value="24" selected>24 h</option>
-        <option value="48">48 h</option>
-      </select>
-    </fieldset>
+    <details>
+      <summary>Correas / T1 / T3</summary>
+      <div class="fs-body">
+        <label>CV315</label>
+        <div class="radio-row" data-group="correa315_estado">
+          <label><input type="radio" name="correa315_estado" value="activa" checked>Activa</label>
+          <label><input type="radio" name="correa315_estado" value="reducida">Reducida</label>
+          <label><input type="radio" name="correa315_estado" value="inactiva">Inactiva</label>
+        </div>
+        <label>CV316</label>
+        <div class="radio-row" data-group="correa316_estado">
+          <label><input type="radio" name="correa316_estado" value="activa" checked>Activa</label>
+          <label><input type="radio" name="correa316_estado" value="reducida">Reducida</label>
+          <label><input type="radio" name="correa316_estado" value="inactiva">Inactiva</label>
+        </div>
+
+        <label>Distribucion CV315/CV316</label>
+        <div class="radio-row" data-group="cv_mode">
+          <label><input type="radio" name="cv_mode" value="auto" checked>Automatico</label>
+          <label><input type="radio" name="cv_mode" value="manual">Manual</label>
+        </div>
+        <div id="cv_manual_block" class="conditional">
+          <label>CV315 (TPH)</label>
+          <div class="dual"><input type="range" id="cv315_manual_tph" min="0" max="4000" step="50" value="1000">
+            <input type="number" id="cv315_manual_tph_num" min="0" max="4000" step="50" value="1000"></div>
+          <label>CV316 (TPH)</label>
+          <div class="dual"><input type="range" id="cv316_manual_tph" min="0" max="4000" step="50" value="1000">
+            <input type="number" id="cv316_manual_tph_num" min="0" max="4000" step="50" value="1000"></div>
+        </div>
+
+        <label>Modo T1</label>
+        <select id="t1_mode">
+          <option value="chancado" selected>Chancado (capacidad directa)</option>
+          <option value="historico">Historico (P50 segun chancadores)</option>
+          <option value="manual">Manual</option>
+        </select>
+        <div id="t1_manual_block" class="conditional">
+          <label>T1 disponible (TPH)</label>
+          <div class="dual"><input type="range" id="t1_manual_tph" min="0" max="6000" step="100" value="4000">
+            <input type="number" id="t1_manual_tph_num" min="0" max="6000" step="100" value="4000"></div>
+        </div>
+        <label>Fraccion a T3 (%)</label>
+        <div class="dual"><input type="range" id="t3_frac_pct" min="0" max="50" step="5" value="0">
+          <input type="number" id="t3_frac_pct_num" min="0" max="50" step="5" value="0"></div>
+        <label>Distribucion T1 entre SAG1/SAG2</label>
+        <select id="distribucion_t1">
+          <option value="proporcional" selected>Proporcional a rate</option>
+          <option value="priorizar_sag1">Priorizar SAG1</option>
+          <option value="priorizar_sag2">Priorizar SAG2</option>
+          <option value="balanceado">Balanceado 50/50</option>
+        </select>
+      </div>
+    </details>
+
+    <details>
+      <summary>Ventana T8 / Horizonte</summary>
+      <div class="fs-body">
+        <label>Duracion T8 (h)</label>
+        <div class="dual"><input type="range" id="duracion_t8_h" min="0" max="48" step="0.5" value="0">
+          <input type="number" id="duracion_t8_h_num" min="0" max="48" step="0.5" value="0"></div>
+        <label>Horizonte simulacion (h)</label>
+        <div class="dual"><input type="range" id="horizonte_horas" min="2" max="72" step="1" value="24">
+          <input type="number" id="horizonte_horas_num" min="2" max="72" step="1" value="24"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Avanzado</summary>
+      <div class="fs-body">
+        <label>Recuperacion de alimentacion post-ventana</label>
+        <select id="feed_recovery_mode">
+          <option value="instant">Instantanea</option>
+          <option value="linear" selected>Lineal</option>
+          <option value="stepped">Escalonada</option>
+          <option value="exponential">Exponencial</option>
+        </select>
+        <label>Tiempo de recuperacion (min) — 0 = instantaneo</label>
+        <div class="dual"><input type="range" id="feed_recovery_time_min" min="0" max="120" step="5" value="0">
+          <input type="number" id="feed_recovery_time_min_num" min="0" max="120" step="5" value="0"></div>
+        <label>Rampa de arranque SAG (min) — 0 = instantaneo</label>
+        <div class="dual"><input type="range" id="sag_ramp_up_time_min" min="0" max="60" step="5" value="0">
+          <input type="number" id="sag_ramp_up_time_min_num" min="0" max="60" step="5" value="0"></div>
+        <label>Rampa de apagado SAG (min) — 0 = instantaneo</label>
+        <div class="dual"><input type="range" id="sag_ramp_down_time_min" min="0" max="60" step="5" value="0">
+          <input type="number" id="sag_ramp_down_time_min_num" min="0" max="60" step="5" value="0"></div>
+        <div class="toggle-row"><label>Forzar capacidad de 1 bola como techo fisico</label>
+          <input type="checkbox" id="enforce_downstream_ball_capacity"></div>
+        <label>Factor de capacidad con 1 bola (supuesto, no calibrado)</label>
+        <div class="dual"><input type="range" id="one_ball_capacity_factor" min="0.40" max="0.70" step="0.01" value="0.55">
+          <input type="number" id="one_ball_capacity_factor_num" min="0.40" max="0.70" step="0.01" value="0.55"></div>
+        <div class="toggle-row"><label>Redistribuir alimentacion SAC1/SAC2</label>
+          <input type="checkbox" id="redistribution_enabled"></div>
+      </div>
+    </details>
 
     <button id="run" disabled>Cargando motor Python…</button>
     <div id="status"></div>
@@ -137,11 +225,17 @@
       <p id="rec_text"></p>
     </div>
     <div id="kpis"></div>
+
+    <div class="chart">
+      <h4>Vista dinamica — alimentadores y pilas (drena / aumenta)</h4>
+      <div id="chart_dynamic"></div>
+    </div>
+
     <div class="chart" id="chart_pilas"></div>
     <div class="chart" id="chart_tph"></div>
   </div>
 </main>
 
-<script src="sim-engine.js?v=2"></script>
+<script src="sim-engine.js?v=3"></script>
 </body>
 </html>
