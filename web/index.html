@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gemelo Digital SAG — Simulador Operacional</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 0;
+         background: #0f1115; color: #e8e8ea; }
+  header { padding: 16px 24px; border-bottom: 1px solid #262a33; }
+  header h1 { font-size: 18px; margin: 0 0 4px; }
+  header p { margin: 0; color: #9aa0ab; font-size: 13px; }
+  main { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 70px); }
+  #panel { padding: 20px; border-right: 1px solid #262a33; overflow-y: auto; }
+  #panel fieldset { border: 1px solid #262a33; border-radius: 8px; margin-bottom: 14px; padding: 10px 12px; }
+  #panel legend { font-size: 12px; color: #9aa0ab; padding: 0 6px; }
+  #panel label { display: block; font-size: 13px; margin: 8px 0 3px; }
+  #panel input[type=range] { width: 100%; }
+  #panel input[type=number], #panel select { width: 100%; box-sizing: border-box; padding: 5px 6px;
+       background: #1a1d24; color: #e8e8ea; border: 1px solid #333844; border-radius: 6px; }
+  #panel .row-val { display:flex; justify-content:space-between; font-size:12px; color:#c7cbd4; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
+  button#run { width: 100%; padding: 12px; margin-top: 8px; background: #3574f0; color: white;
+       border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  button#run:disabled { background: #3a3f4b; cursor: wait; }
+  #status { font-size: 12px; color: #9aa0ab; margin-top: 8px; min-height: 16px; }
+  #content { padding: 20px; overflow-y: auto; }
+  #kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: #171a21; border: 1px solid #262a33; border-radius: 8px; padding: 12px; }
+  .kpi .label { font-size: 11px; color: #9aa0ab; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  #recommendation { background: #171a21; border: 1px solid #262a33; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+  #recommendation h3 { margin: 0 0 6px; font-size: 14px; }
+  #recommendation p { margin: 0; font-size: 13px; color: #c7cbd4; line-height: 1.5; }
+  .chart { background: #171a21; border: 1px solid #262a33; border-radius: 8px; padding: 8px; margin-bottom: 16px; }
+  #banner { background: #2a2410; border: 1px solid #6b5c1e; color: #e8d98a; font-size: 12px;
+       padding: 10px 16px; margin: 0; }
+  a { color: #7aa2ff; }
+</style>
+</head>
+<body>
+
+<p id="banner">Motor Python real (engine/) ejecutado en el navegador via Pyodide/WebAssembly — no hay backend.
+  Este repositorio no incluye datos operacionales crudos de planta; solo codigo y coeficientes de
+  calibracion derivados. Ver <a href="https://github.com/jsorellana1/gemelo-digital-sag" target="_blank">codigo fuente</a>.</p>
+
+<header>
+  <h1>Gemelo Digital SAG — Simulador Operacional</h1>
+  <p>Division El Teniente — Codelco | CIO Analytics</p>
+</header>
+
+<main>
+  <div id="panel">
+    <fieldset>
+      <legend>Pilas</legend>
+      <label>Pila SAG1 (%) <span class="row-val"><span></span><span id="v_pila1"></span></span></label>
+      <input type="range" id="pila_sag1_pct" min="0" max="100" step="1" value="60">
+      <label>Pila SAG2 (%) <span class="row-val"><span></span><span id="v_pila2"></span></span></label>
+      <input type="range" id="pila_sag2_pct" min="0" max="100" step="1" value="60">
+    </fieldset>
+
+    <fieldset>
+      <legend>Produccion</legend>
+      <label>Rate SAG1 (%) <span class="row-val"><span></span><span id="v_rate1"></span></span></label>
+      <input type="range" id="rate_sag1_pct" min="0" max="120" step="1" value="95">
+      <label>Rate SAG2 (%) <span class="row-val"><span></span><span id="v_rate2"></span></span></label>
+      <input type="range" id="rate_sag2_pct" min="0" max="120" step="1" value="95">
+    </fieldset>
+
+    <fieldset>
+      <legend>Equipos</legend>
+      <div class="toggle-row"><label style="margin:0">SAG1 activo</label><input type="checkbox" id="sag1_activo" checked></div>
+      <div class="toggle-row"><label style="margin:0">SAG2 activo</label><input type="checkbox" id="sag2_activo" checked></div>
+      <div class="toggle-row"><label style="margin:0">Chancado 1</label><input type="checkbox" id="ch1_on" checked></div>
+      <div class="toggle-row"><label style="margin:0">Chancado 2</label><input type="checkbox" id="ch2_on" checked></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bolas</legend>
+      <label>Bolas SAG1</label>
+      <select id="bolas_sag1">
+        <option value="sin_bola">Sin bola</option>
+        <option value="solo_411">Solo 411</option>
+        <option value="solo_412">Solo 412</option>
+        <option value="ambas_411_412">Ambas (411+412)</option>
+      </select>
+      <label>Bolas SAG2</label>
+      <select id="bolas_sag2">
+        <option value="sin_bola">Sin bola</option>
+        <option value="solo_511">Solo 511</option>
+        <option value="solo_512">Solo 512</option>
+        <option value="ambas_511_512">Ambas (511+512)</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Correas</legend>
+      <label>CV315</label>
+      <select id="correa315_estado">
+        <option value="activa">Activa</option>
+        <option value="reducida">Reducida</option>
+        <option value="inactiva">Inactiva</option>
+      </select>
+      <label>CV316</label>
+      <select id="correa316_estado">
+        <option value="activa">Activa</option>
+        <option value="reducida">Reducida</option>
+        <option value="inactiva">Inactiva</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ventana T8 / Horizonte</legend>
+      <label>Duracion T8 (h) <span class="row-val"><span></span><span id="v_t8"></span></span></label>
+      <input type="range" id="duracion_t8_h" min="0" max="48" step="0.5" value="0">
+      <label>Horizonte simulacion</label>
+      <select id="horizonte_horas">
+        <option value="2">2 h</option>
+        <option value="4">4 h</option>
+        <option value="8">8 h</option>
+        <option value="12">12 h</option>
+        <option value="24" selected>24 h</option>
+        <option value="48">48 h</option>
+      </select>
+    </fieldset>
+
+    <button id="run" disabled>Cargando motor Python…</button>
+    <div id="status"></div>
+  </div>
+
+  <div id="content">
+    <div id="recommendation" style="display:none">
+      <h3>Recomendacion operacional</h3>
+      <p id="rec_text"></p>
+    </div>
+    <div id="kpis"></div>
+    <div class="chart" id="chart_pilas"></div>
+    <div class="chart" id="chart_tph"></div>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
