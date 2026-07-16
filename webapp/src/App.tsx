@@ -1,13 +1,7 @@
 import { useState } from "react";
-import createPlotlyComponent from "react-plotly.js/factory";
-import Plotly from "plotly.js-dist-min";
+import Plot from "./components/PlotlyChart";
 import { usePyodideWorker, type SimResult } from "./hooks/usePyodideWorker";
 import "./App.css";
-
-// Se usa el build ligero plotly.js-dist-min (no el paquete 'plotly.js'
-// completo) via el factory de react-plotly.js, para no arrastrar el bundle
-// pesado por defecto.
-const Plot = createPlotlyComponent(Plotly);
 
 const P90 = { SAG1: 1454.0, SAG2: 2516.0 };
 function rateTphToPct(rateTph: number, asset: keyof typeof P90) {
@@ -150,7 +144,7 @@ export default function App() {
                   font: { color: "#e8e8ea" }, margin: { t: 40 },
                   xaxis: { title: { text: "Horas" } }, yaxis: { title: { text: "% pila" } },
                 }}
-                useResizeHandler style={{ width: "100%", height: "360px" }}
+                style={{ width: "100%", height: "360px" }}
                 config={{ displayModeBar: false, responsive: true }}
               />
             </>
