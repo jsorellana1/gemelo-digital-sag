@@ -7,27 +7,81 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-
 
 .banner { background: #2a2410; border: 1px solid #6b5c1e; color: #e8d98a; font-size: 12px;
           padding: 10px 16px; margin: 0; }
+.banner a { color: #f0d97a; }
 
 header { padding: 16px 24px; border-bottom: 1px solid #262a33; }
-header h1 { font-size: 18px; margin: 0 0 4px; }
+header h1 { font-size: 19px; margin: 0 0 4px; font-weight: 700; }
 header p { margin: 0; color: #9aa0ab; font-size: 13px; }
 
-main { display: grid; grid-template-columns: 320px 1fr; flex: 1; }
+main { display: grid; grid-template-columns: 340px 1fr; flex: 1; min-height: 0; }
 
-.panel { padding: 20px; border-right: 1px solid #262a33; display: flex; flex-direction: column; gap: 4px; }
-.panel label { font-size: 12.5px; color: #c7cbd4; margin-top: 8px; }
-.panel input[type=range] { width: 100%; }
-.panel span { font-size: 12px; color: #9aa0ab; }
-.panel button { margin-top: 14px; padding: 12px; background: #3574f0; color: #fff; border: none;
-                 border-radius: 8px; font-weight: 600; cursor: pointer; }
-.panel button:disabled { background: #3a3f4b; cursor: wait; }
-.status { font-size: 12px; color: #9aa0ab; margin-top: 8px; }
+/* ── Panel de controles ─────────────────────────────────────────────── */
+
+.panel { padding: 16px; border-right: 1px solid #262a33; overflow-y: auto;
+         max-height: calc(100vh - 96px); position: sticky; top: 0; align-self: start; }
+
+.section { border: 1px solid #262a33; border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+           background: #14161c; }
+.section summary { font-size: 12px; color: #c7cbd4; padding: 10px 12px; cursor: pointer;
+                    user-select: none; text-transform: uppercase; letter-spacing: .05em;
+                    font-weight: 600; list-style: none; display: flex; align-items: center;
+                    justify-content: space-between; }
+.section summary::-webkit-details-marker { display: none; }
+.section summary::after { content: "▾"; color: #6b7280; transition: transform .15s ease; font-size: 11px; }
+.section[open] summary::after { transform: rotate(180deg); }
+.section summary:hover { color: #fff; }
+.section-body { padding: 4px 12px 12px; border-top: 1px solid #1e222b; }
+
+.field { margin-top: 10px; }
+.field label { display: block; font-size: 12px; color: #9aa0ab; margin-bottom: 4px; }
+.field select { width: 100%; box-sizing: border-box; padding: 6px 8px; background: #1a1d24;
+                 color: #e8e8ea; border: 1px solid #333844; border-radius: 6px; font-size: 12.5px; }
+
+.dual { display: flex; align-items: center; gap: 8px; }
+.dual input[type=range] { flex: 1; accent-color: #3574f0; }
+.dual-num { display: flex; align-items: center; gap: 4px; }
+.dual-num input[type=number] { width: 64px; box-sizing: border-box; padding: 4px 5px;
+     background: #1a1d24; color: #e8e8ea; border: 1px solid #333844; border-radius: 6px; font-size: 12px; }
+.dual-num .suffix { font-size: 10.5px; color: #6b7280; min-width: 26px; }
+
+.radio-row { display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+.radio-option { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #c7cbd4; }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between;
+              padding: 8px 0; font-size: 12.5px; color: #c7cbd4; cursor: pointer; }
+.switch { width: 34px; height: 19px; border-radius: 999px; background: #333844; position: relative;
+          flex-shrink: 0; transition: background .15s ease; cursor: pointer; }
+.switch.on { background: #3574f0; }
+.switch .knob { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%;
+                background: #fff; transition: left .15s ease; }
+.switch.on .knob { left: 17px; }
+
+.run-btn { width: 100%; padding: 13px; margin-top: 12px; background: #3574f0; color: #fff; border: none;
+           border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
+           box-shadow: 0 4px 14px rgba(53, 116, 240, .35); transition: filter .15s ease; }
+.run-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.run-btn:disabled { background: #2a2d36; color: #6b7280; cursor: wait; box-shadow: none; }
+.status { font-size: 11.5px; color: #6b7280; margin-top: 8px; text-align: center; }
 .error { font-size: 12px; color: #e07a7a; margin-top: 6px; }
 
-.content { padding: 20px; }
+/* ── Contenido ───────────────────────────────────────────────────────── */
+
+.content { padding: 20px; overflow-y: auto; max-height: calc(100vh - 96px); }
+.empty-state { color: #6b7280; font-size: 14px; padding: 60px 20px; text-align: center;
+               border: 1px dashed #262a33; border-radius: 12px; }
+
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
-.kpi { background: #171a21; border: 1px solid #262a33; border-radius: 8px; padding: 12px; }
-.kpi .label { font-size: 11px; color: #9aa0ab; text-transform: uppercase; letter-spacing: .04em; }
-.kpi .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
-.recommendation { background: #171a21; border: 1px solid #262a33; border-radius: 8px;
-                   padding: 14px 16px; margin-bottom: 16px; font-size: 13px; }
+.kpi { background: #171a21; border: 1px solid #262a33; border-radius: 10px; padding: 14px; }
+.kpi .label { font-size: 10.5px; color: #9aa0ab; text-transform: uppercase; letter-spacing: .05em; }
+.kpi .value { font-size: 23px; font-weight: 700; margin-top: 5px; }
+
+.recommendation { background: #171a21; border: 1px solid #262a33; border-left: 4px solid #4fb0e5;
+                   border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+.recommendation h3 { margin: 0 0 8px; }
+.recommendation .badge { display: inline-block; padding: 3px 10px; border-radius: 999px;
+                          font-size: 11px; font-weight: 700; color: #0f1115; letter-spacing: .03em; }
+.recommendation p { margin: 0; font-size: 13px; color: #c7cbd4; line-height: 1.5; }
+
+.chart-card { background: #171a21; border: 1px solid #262a33; border-radius: 10px; padding: 10px;
+              margin-bottom: 16px; }
+.chart-card h4 { margin: 4px 8px; font-size: 13px; color: #c7cbd4; font-weight: 600; }
