@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "web/**"
+      - "webapp/**"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -25,9 +26,29 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Build app React (prototipo, Fase 1 roadmap 3D)
+        working-directory: webapp
+        run: |
+          npm ci
+          npm run build
+
+      - name: Ensamblar artefacto de Pages
+        run: |
+          mkdir -p _site
+          cp -r web/. _site/
+          mkdir -p _site/app
+          cp -r webapp/dist/. _site/app/
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

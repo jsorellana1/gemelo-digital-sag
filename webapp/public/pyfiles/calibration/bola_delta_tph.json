@@ -1,0 +1,35 @@
+{
+  "version": "v1.0",
+  "fecha_calibracion": "2026-07-01",
+  "SAG1": {
+    "delta_tph_per_bola": 116.3,
+    "delta_tph_1bola": 116.3,
+    "delta_tph_2bola": 232.6,
+    "base_tph_mean": 1162.1,
+    "n_total": 38614,
+    "n_per_stratum": {
+      "0": 11,
+      "1": 8870,
+      "2": 29733
+    },
+    "method": "legacy_engineering",
+    "warning": "n_bolas=0 insuficiente (n0=11 < 200): no hay grupo de control para calibrar dTPH empiricamente. Se usa modelo de ingenieria BOLA_BONUS=0.08 (=8% de P90)."
+  },
+  "SAG2": {
+    "delta_tph_per_bola": 201.3,
+    "delta_tph_1bola": 201.3,
+    "delta_tph_2bola": 402.6,
+    "base_tph_mean": 2194.4,
+    "n_total": 38969,
+    "n_per_stratum": {
+      "1": 2741,
+      "2": 36228
+    },
+    "method": "legacy_engineering",
+    "warning": "n_bolas=0 insuficiente (n0=0 < 200): no hay grupo de control para calibrar dTPH empiricamente. Se usa modelo de ingenieria BOLA_BONUS=0.08 (=8% de P90)."
+  },
+  "legacy_bola_bonus": 0.08,
+  "legacy_delta_sag1_tph": 116.3,
+  "legacy_delta_sag2_tph": 201.3,
+  "notes": "Media estratificada controlada por banda de feed de chancado. T8-activo excluido. Cap: 15% de P90 por bola. Datos: ~93k filas a 5-min frecuencia, PI Historian."
+}
