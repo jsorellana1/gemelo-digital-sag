@@ -44,6 +44,16 @@ AUTONOMY_THRESHOLDS = {
     "SAG2": {"EMERGENCIA": 0.5, "CRITICO": 1.0, "ALERTA": 2.5, "MONITOREAR": 4.0},
 }
 
+# Riesgo de overflow con SAG detenido (2026-07-15, cierre del gap
+# confirmado en Validacion_Motor_Recomendaciones.md / escenarios dorados
+# seccion 29 caso 3): si un SAG esta apagado, nada esta drenando su pila
+# -- si esta sube hacia el limite, el riesgo es real aunque la autonomia
+# de drenaje (que asume consumo activo) no lo capture. Mismo umbral que
+# ya usa detectar_overflow_historico (engine/diagnostics/
+# regime_event_detector.py::OVERFLOW_PILA_PCT=85.0) para consistencia.
+OVERFLOW_RISK_PCT = 85.0
+OVERFLOW_IMMINENTE_PCT = 95.0
+
 
 def _per_sag_status(autonomia_h: float, asset: str) -> str:
     """
@@ -207,6 +217,16 @@ def recommend_action(
     critico = "SAG1" if autonomia_sag1 <= autonomia_sag2 else "SAG2"
     critico_auton = autonomia_sag1 if critico == "SAG1" else autonomia_sag2
 
+    # Riesgo de overflow con SAG detenido: nada esta drenando esa pila, asi
+    # que autonomia_sagX (que asume consumo activo) no captura este riesgo.
+    # Si hay mas de un activo en riesgo, se prioriza el de pila mas alta.
+    _riesgo_overflow = sorted(
+        [(a, p) for a, activo, p in
+         (("SAG1", sag1_activo, pile_sag1_pct), ("SAG2", sag2_activo, pile_sag2_pct))
+         if not activo and p >= OVERFLOW_RISK_PCT],
+        key=lambda ap: ap[1], reverse=True,
+    )
+
     # Verificar restricciones adicionales
     extras = []
 
@@ -301,6 +321,19 @@ def recommend_action(
     elif min_auton < 1.0:
         accion = "EVALUAR_DETENCION"
         exp = f"{critico} bajo 1h ({_fmt_auton(critico_auton, critico)}). Evaluar detencion parcial."
+    elif _riesgo_overflow and _riesgo_overflow[0][1] >= OVERFLOW_IMMINENTE_PCT:
+        activo_riesgo, pile_riesgo = _riesgo_overflow[0]
+        accion = "EMERGENCIA"
+        exp = (f"[!!] {activo_riesgo} detenido con pila en {pile_riesgo:.0f}% "
+               f"(>= {OVERFLOW_IMMINENTE_PCT:.0f}%): riesgo de overflow inminente, "
+               f"nada esta drenando la pila. Reactivar {activo_riesgo} o cortar "
+               f"alimentacion de inmediato.")
+    elif _riesgo_overflow:
+        activo_riesgo, pile_riesgo = _riesgo_overflow[0]
+        accion = "REDUCIR_CARGA"
+        exp = (f"{activo_riesgo} detenido con pila en {pile_riesgo:.0f}% "
+               f"(>= {OVERFLOW_RISK_PCT:.0f}%): riesgo de overflow si continua el feed. "
+               f"Reducir alimentacion o evaluar reactivar {activo_riesgo}.")
     elif chancado_cap_tph == 0.0:
         accion = "EMERGENCIA"
         exp = "Chancado detenido: sin alimentacion. Evaluar autonomia de pilas."

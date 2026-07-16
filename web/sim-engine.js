@@ -34,7 +34,7 @@ async function initPyodide() {
   setStatus("Descargando Pyodide (WebAssembly)…");
   const pyodide = await loadPyodide();
   setStatus("Cargando numpy/pandas…");
-  await pyodide.loadPackage(["numpy", "pandas"]);
+  await pyodide.loadPackage(["numpy", "pandas", "scipy"]);
 
   pyodide.FS.mkdir("/app");
   for (const [rel, url] of PY_FILES) {
