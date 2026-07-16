@@ -154,7 +154,7 @@ async function runSimulation() {
     pyodide.globals.set("_params", pyodide.toPy(params));
     const resultPy = pyodide.runPython(`
 import json
-result = simulate_scenario(**_params.to_py())
+result = simulate_scenario(**_params)
 json.dumps(result, default=lambda o: o.tolist() if hasattr(o, "tolist") else str(o))
 `);
     const result = JSON.parse(resultPy);
