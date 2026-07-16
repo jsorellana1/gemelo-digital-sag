@@ -1,0 +1,17 @@
+Gemelo Digital Molienda DET
+
+Version: 1.0.0
+Fecha: 2026-07-02
+Division El Teniente - Codelco | Analitica CIO-DET
+
+Incluye:
+- Simulador Operacional con recomendacion automatica (Optimizer V3)
+- Monte Carlo adaptativo en vivo
+- Calibracion Metropolis-Hastings (posteriors precalculados)
+- Riesgo Operacional ("Que pasa si...?")
+- Gantt de disponibilidad de equipos y mantenciones programables
+- Regla operacional R16 (molinos de bolas)
+
+Build: PyInstaller --onefile --console
+Datos: subconjunto congelado (runtime_data/) — no incluye datos Raw ni
+notebooks de analisis exploratorio.

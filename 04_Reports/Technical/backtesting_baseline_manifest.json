@@ -1,0 +1,128 @@
+{
+  "fecha_generacion": "2026-07-15",
+  "git": {
+    "branch": "feature/gemelo-v1-2-0-optimizacion-motor-evidencia",
+    "head_sha": "2579ae473ca10e1b22d660584f362323a5209acb",
+    "working_tree_limpio": true
+  },
+  "datasets": {
+    "fact_eventos_t8.parquet": {
+      "sha256_16": "f7b86bd97b5974c0",
+      "bytes": 6702,
+      "uso": "calibracion DRAIN_PCT_H"
+    },
+    "advanced_t8_official_events.parquet": {
+      "sha256_16": "13513d0003e23560",
+      "bytes": 6383,
+      "uso": "backtesting t8_corta/t8_larga"
+    },
+    "advanced_t8_event_windows.parquet": {
+      "sha256_16": "5d6cb463d73d8396",
+      "bytes": 4475686,
+      "uso": "backtesting t8_corta/t8_larga (series)"
+    },
+    "advanced_t8_historical_5min.parquet": {
+      "sha256_16": "cfb3028e47eaec00",
+      "bytes": 8365983,
+      "uso": "backtesting proxy (overflow/inventario_critico/mantenimiento/alimentacion_restringida)"
+    }
+  },
+  "parametros_activos": {
+    "DRAIN_PCT_H": {
+      "SAG1": 23.76,
+      "SAG2": 6.18
+    },
+    "CRITICAL_PCT": {
+      "SAG1": 15.0,
+      "SAG2": 18.2
+    },
+    "VENTANA_FACTOR_ESTADO": {
+      "activa": 1.0,
+      "reducida": 0.4,
+      "inactiva": 0.0
+    },
+    "ONE_BALL_CAPACITY_FACTOR": 0.55
+  },
+  "N_MINIMO_EVENTOS": {
+    "t8_corta": 20,
+    "t8_larga": 20,
+    "inventario_critico": 3,
+    "overflow": 3,
+    "mantenimiento": 5,
+    "alimentacion_restringida": 3
+  },
+  "TOLERANCIAS_BACKTESTING": {
+    "pila_mae_pct": 5.0,
+    "tph_mae_pct": 10.0
+  },
+  "resultados_baseline_por_regimen": {
+    "t8_corta": {
+      "historica_disponible": true,
+      "n_eventos": 63,
+      "pila_mae_sag1_pp": 18.88,
+      "pila_mae_sag2_pp": 4.42,
+      "pila_bias_sag1_pp": -16.91,
+      "pila_std_sag1_pp": 19.92,
+      "tph_mae_sag1_pct": 31.5,
+      "error_tiempo_critico_h": 3.98,
+      "dentro_tolerancia": false,
+      "razon": "MAE SAG1=18.88pp (tolerancia 5.0pp)"
+    },
+    "t8_larga": {
+      "historica_disponible": false,
+      "n_eventos": 8,
+      "pila_mae_sag1_pp": null,
+      "pila_mae_sag2_pp": null,
+      "pila_bias_sag1_pp": null,
+      "pila_std_sag1_pp": null,
+      "tph_mae_sag1_pct": null,
+      "error_tiempo_critico_h": null,
+      "dentro_tolerancia": null,
+      "razon": "N=8 eventos < minimo requerido (20) — estructura de datos correcta pero insuficiente"
+    },
+    "overflow": {
+      "historica_disponible": true,
+      "n_eventos": 97,
+      "pila_mae_sag1_pp": 4.51,
+      "pila_bias_sag1_pp": 3.47,
+      "pila_std_sag1_pp": 4.63,
+      "tph_mae_sag1_pct": 0.0,
+      "error_tiempo_critico_h": 0.45,
+      "dentro_tolerancia": true,
+      "razon": "Backtesting proxy (deteccion retrospectiva, no dataset oficial): MAE=4.51pp sobre 97 eventos (tolerancia 5.0pp)"
+    },
+    "inventario_critico": {
+      "historica_disponible": true,
+      "n_eventos": 221,
+      "pila_mae_sag1_pp": 13.89,
+      "pila_bias_sag1_pp": -11.02,
+      "pila_std_sag1_pp": 18.73,
+      "tph_mae_sag1_pct": 30.5,
+      "error_tiempo_critico_h": 0.46,
+      "dentro_tolerancia": false,
+      "razon": "Backtesting proxy (deteccion retrospectiva, no dataset oficial): MAE=13.89pp sobre 221 eventos (tolerancia 5.0pp)"
+    },
+    "mantenimiento": {
+      "historica_disponible": true,
+      "n_eventos": 239,
+      "pila_mae_sag1_pp": 14.47,
+      "pila_bias_sag1_pp": 0.27,
+      "pila_std_sag1_pp": 20.76,
+      "tph_mae_sag1_pct": 69.5,
+      "error_tiempo_critico_h": null,
+      "dentro_tolerancia": false,
+      "razon": "Backtesting proxy (deteccion retrospectiva, no dataset oficial): MAE=14.47pp sobre 239 eventos (tolerancia 5.0pp)"
+    },
+    "alimentacion_restringida": {
+      "historica_disponible": true,
+      "n_eventos": 1477,
+      "pila_mae_sag1_pp": 12.8,
+      "pila_bias_sag1_pp": -11.82,
+      "pila_std_sag1_pp": 12.81,
+      "tph_mae_sag1_pct": 10.1,
+      "error_tiempo_critico_h": null,
+      "dentro_tolerancia": false,
+      "razon": "Backtesting proxy (deteccion retrospectiva, no dataset oficial): MAE=12.80pp sobre 1477 eventos (tolerancia 5.0pp)"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# Rutas centrales del proyecto 07_Rendimientos
+# Todas relativas a la raíz del proyecto
+root: .
+data_raw: data/raw
+data_processed: data/processed
+data_intermediate: data/intermediate
+data_cache: data/cache
+analytics_root: analytics
+analytics_outputs: analytics/outputs
+analytics_src: analytics/src
+analytics_notebooks: analytics/notebooks
+dash_root: app_dash
+dash_cache: app_dash/outputs
+dash_config: app_dash/config
+skills: Skills
+archive: archive

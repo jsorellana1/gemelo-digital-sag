@@ -1,0 +1,109 @@
+{
+  "audit_date": "2026-07-15",
+  "baseline_scope": "Fase 0 / Incremento 1 del motor multicelda. Congela el baseline agregado antes de integrar adaptadores de dominio.",
+  "branch": "feature/gemelo-v1-2-0-optimizacion-motor-evidencia",
+  "head_commit": "bb3dfdb0ce2522d702efe8dcd32b3c302b62ed9b",
+  "working_tree_dirty": true,
+  "engine_version": "simulate_scenario + simulate_ode con default aggregated y multicell_enabled=false",
+  "model_version": "aggregated_baseline_pre_adapter",
+  "parameter_version": {
+    "multicell_enabled_default": false,
+    "stockpile_model_sag1_default": "aggregated",
+    "stockpile_model_sag2_default": "aggregated"
+  },
+  "dataset_hashes": {
+    "01_Data/Raw/Tonelajes_pila/pilas_rendimientos.xlsx": "46E7EC7BFC15FA79CB08ED41B0B07680012E89AF71EEB780EAC15E74E0162970",
+    "01_Data/Cache/advanced_t8_official_events.parquet": "13513D0003E235600676B9419EB5E352F199CB3C97326C3FEF575C8B124140B6",
+    "01_Data/Cache/advanced_t8_event_windows.parquet": "5D6CB463D73D8396A6FB5EEBDAA48239BAFE38F5BE0D744F14C6D59FA3E60A62"
+  },
+  "baseline_tests": {
+    "05_Dashboard/tests/test_router_v2.py": "34 passed",
+    "05_Dashboard/tests/test_stockpile_multicell.py": "8 passed",
+    "05_Dashboard/tests/test_backtesting_multicell.py": "3 passed"
+  },
+  "smoke_simulation": {
+    "scenario": {
+      "pila_sag1_pct": 60.0,
+      "pila_sag2_pct": 55.0,
+      "rate_sag1_pct": 100.0,
+      "rate_sag2_pct": 100.0,
+      "horizonte_horas": 1.0,
+      "cv_mode": "manual",
+      "cv315_manual_tph": 1000.0,
+      "cv316_manual_tph": 1400.0
+    },
+    "multicell_enabled": false,
+    "mass_balance_error_sag1_ton": 1.8189894035458565e-12,
+    "mass_balance_error_sag2_ton": 0.0,
+    "output_keys_sample": [
+      "time",
+      "pile_sag1",
+      "pile_sag2",
+      "tph_sag1",
+      "tph_sag2",
+      "cv315",
+      "cv316",
+      "mass_balance_error_sag1",
+      "mass_balance_error_sag2",
+      "multicell_enabled"
+    ],
+    "sample_lengths": {
+      "time": 13,
+      "pile_sag1": 13,
+      "pile_sag2": 13,
+      "tph_sag1": 13,
+      "tph_sag2": 13
+    }
+  },
+  "mae_by_regime_full_split": {
+    "t8_corta": {
+      "n_eventos": 63,
+      "pila_mae_sag1_pp": 18.88,
+      "pila_mae_sag2_pp": 4.42,
+      "pila_bias_sag1_pp": -16.91,
+      "tph_mae_sag1_pct": 31.5,
+      "dentro_tolerancia": false
+    },
+    "overflow": {
+      "n_eventos": 97,
+      "pila_mae_sag1_pp": 4.51,
+      "pila_mae_sag2_pp": 1.86,
+      "pila_bias_sag1_pp": 3.47,
+      "tph_mae_sag1_pct": 0.0,
+      "dentro_tolerancia": true
+    },
+    "inventario_critico": {
+      "n_eventos": 221,
+      "pila_mae_sag1_pp": 13.89,
+      "pila_mae_sag2_pp": 3.73,
+      "pila_bias_sag1_pp": -11.02,
+      "tph_mae_sag1_pct": 30.5,
+      "dentro_tolerancia": false
+    },
+    "mantenimiento": {
+      "n_eventos": 239,
+      "pila_mae_sag1_pp": 14.47,
+      "pila_mae_sag2_pp": 7.94,
+      "pila_bias_sag1_pp": 0.27,
+      "tph_mae_sag1_pct": 69.5,
+      "dentro_tolerancia": false
+    },
+    "alimentacion_restringida": {
+      "n_eventos": 1477,
+      "pila_mae_sag1_pp": 12.8,
+      "pila_mae_sag2_pp": 2.71,
+      "pila_bias_sag1_pp": -11.82,
+      "tph_mae_sag1_pct": 10.1,
+      "dentro_tolerancia": false
+    }
+  },
+  "artifacts": [
+    "04_Reports/Technical/20260715_multicell_backtest_summary.csv",
+    "04_Reports/Technical/20260715_multicell_backtest_delta_vs_baseline.csv",
+    "04_Reports/Technical/20260715_multicell_holdout_deltas.csv",
+    "04_Reports/Technical/20260715_multicell_linear_models.csv",
+    "04_Reports/Technical/20260715_multicell_logistic_models.csv",
+    "04_Reports/Technical/20260715_sag2_lateral_transfer_holdout.csv",
+    "04_Reports/Technical/20260715_sag2_spatial_capacity_holdout.csv"
+  ]
+}

@@ -1,0 +1,19 @@
+# requirements_runtime.txt — Solo dependencias necesarias para EJECUTAR el
+# Gemelo Digital (05_Dashboard). NO incluye notebooks, entrenamiento de
+# modelos, ni herramientas de desarrollo (jupyter, sklearn, xgboost,
+# statsmodels, ruptures, shap, etc. — esas son de 02_Analytics/).
+#
+# Auditado por import estatico de app.py, pages/*.py, engine/*.py,
+# components/*.py el 2026-07-02.
+
+dash==4.3.0
+dash-bootstrap-components==2.0.4
+plotly==6.7.0
+pandas==3.0.2
+numpy==2.4.4
+scipy==1.17.1
+
+# Requeridos por pandas para leer los archivos usados en runtime
+# (parquet en 01_Data/Cache, xlsx solo bajo demanda via boton "Cargar PI")
+pyarrow==24.0.0
+openpyxl==3.1.5

@@ -1,0 +1,77 @@
+# Secrets / env
+.env
+*.env
+*.key
+*.pem
+
+# Data / binary artifacts (por instruccion explicita: no excel, pdf, etc.)
+*.xlsx
+*.xls
+*.pdf
+*.parquet
+*.csv
+*.png
+*.jpg
+*.jpeg
+*.ipynb
+!02_Analytics/Notebooks/**/*.ipynb
+*.pptx
+*.ppt
+*.pkl
+*.joblib
+*.h5
+*.npy
+*.npz
+
+# Este repo (GitHub, espejo de codigo) NO versiona datos operacionales
+# ni modelos calibrados con datos reales de planta. Eso vive solo en el
+# repo interno (Azure DevOps). Ver README para instrucciones de datos locales.
+01_Data/
+03_Models/
+
+# Cache / logs de entrenamiento (regenerables, no son codigo fuente)
+*catboost_info*/
+*tfevents*
+*.tsv
+09_Logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+ipynb_checkpoints_notebooks/
+*.egg-info/
+.venv/
+venv/
+sag/
+
+# Config local del agente (no forma parte del proyecto)
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Logs de la app
+*.log
+
+# Empaquetado PyInstaller (artefactos de build, regenerables)
+05_Dashboard/build/
+05_Dashboard/dist/
+05_Dashboard/*.spec
+*.exe
+
+# Artefactos de runtime de la app (estado de sesion y logs de uso, no fuente)
+05_Dashboard/outputs/logs/
+05_Dashboard/outputs/state/
+
+# Artefactos de scripts de validacion (regenerables via scripts/validate_*.py,
+# no son fuente ni evidencia formal de aceptacion)
+05_Dashboard/outputs/validation/
+05_Dashboard/outputs/debug/
+
+# Copia congelada de datos/config para distribucion (regenerable desde
+# 01_Data/Cache/ y 05_Dashboard/config/ — ver build_exe.bat; commitearla
+# duplicaria contenido ya versionado en otra ruta)
+05_Dashboard/runtime_data/

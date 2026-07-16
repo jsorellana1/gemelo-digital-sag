@@ -1,0 +1,98 @@
+Gemelo Digital Molienda DET
+
+Version: 1.3.0 (build 12.07.2026)
+Fecha: 2026-07-12
+Division El Teniente - Codelco | Analitica CIO-DET
+
+Estado: Build de distribucion 12.07.2026
+
+Novedades v1.3.0 (build 12.07.2026) (ver 04_Reports/Technical/20260709_Autonomia_Armonia_Distribucion_SAG.md
+y 04_Reports/Technical/20260709_Portable_Sync_Architecture.md):
+- Reenfoque del simulador hacia supervivencia/autonomia: nuevo
+  engine/optimizer_v5.py (score multiobjetivo, 3 perfiles Conservador/
+  Balanceado/Productivo), reusa V2/V3/V4 sin romperlos.
+- Nuevo Indice de Armonia Operacional (engine/harmony_index.py, 0-100)
+  y tarjeta visible en la vista principal del dashboard.
+- Nuevas metricas de variabilidad TPH (engine/variability_metrics.py) y
+  penalizacion de transitorios (engine/transient_penalty.py).
+- Nuevo plan operacional por hora (engine/hourly_plan.py).
+- Extension de historical_backtesting.py con error de CV (cv_mae_sag1_pct).
+- Fix de performance: cache faltante en regime_event_detector.py que
+  causaba timeouts del callback principal (~22s -> ~0.4s en interacciones
+  repetidas, ver hallazgo 2026-07-10 en el reporte tecnico).
+- Pipeline de release en un clic (05_Dashboard/release_portable.bat +
+  scripts/generate_release_manifest.py): gate de tests obligatorio,
+  manifiesto trazable, verificacion automatica de sincronizacion.
+
+Novedades v1.2.0 (ver 04_Reports/Technical/20260709_Optimizer_V3_Production_Deployment.md):
+- Optimizacion #1 (medida, no estimada): se elimino un uso de dir()
+  dentro del loop caliente del ODE (engine/ode_model.py) que se llamaba
+  480.965 veces por optimizacion sin aportar ningun calculo fisico
+  (31.7% del tiempo total). Reemplazado por una comprobacion explicita
+  equivalente, resultado bit-identico verificado con semilla fija.
+- Optimizacion #2: normalize_for_hash() (engine/scenario_cache.py)
+  redondea floats SOLO para la clave de cache antes de hashear pilas/
+  rates/TPH/etc. — antes, arrastrar un slider un centesimo de punto ya
+  invalidaba el cache (44.7% de aciertos medido). El calculo fisico
+  real nunca usa el valor redondeado.
+- Impacto medido en conjunto: find_optimal_v3 bajo de ~5.2s promedio a
+  ~2.2s promedio en un benchmark controlado de 9 escenarios (P90 3.06s).
+- Bug corregido (reportado en vivo durante esta sesion): navegar a
+  paginas sin el sidebar del simulador (What-If, Riesgo, Desempeño,
+  Rendimiento) causaba un error de callback ("nonexistent object") por
+  un callback de precarga de escenario sin acotar a la pagina correcta.
+- Bug corregido: la nueva pagina /performance fallaba con pandas 3.0+
+  si el log acumulaba alguna fila corrupta (escritura concurrente de
+  mas de un proceso) — ahora descarta filas invalidas de forma
+  explicita en vez de asumir el CSV siempre limpio.
+- Nueva pagina "Rendimiento" (/performance): Top 20 acciones por
+  duracion + SLA operacional, con datos reales de
+  runtime_data/performance_log.csv.
+
+Estado anterior: Aprobada para validacion operacional (QA 2026-07-06)
+
+Incluye:
+- Simulador Operacional con recomendacion automatica (Optimizer V3)
+- Monte Carlo adaptativo bajo demanda (boton "Monte Carlo") + cache por escenario
+- Selector Modo Rapido / Modo Avanzado (Rapido oculta Monte Carlo/Robustez)
+- Banner de version/estado QA + aviso de alcance visible en la app
+- Balance T1/T3 en TPH (nueva pestana "Balance T1/T3"): T1 = CV315 + CV316 + T3
+- Calibracion Metropolis-Hastings (posteriors precalculados)
+- Riesgo Operacional ("Que pasa si...?")
+- Gantt de disponibilidad de equipos y mantenciones programables
+- Regla operacional R16 (molinos de bolas)
+
+Build: PyInstaller --onedir --console, construido con
+05_Dashboard/scripts/build_portable.py (fuente unica: 05_Dashboard/).
+Datos: subconjunto congelado (runtime_data/) - no incluye datos Raw ni
+notebooks de analisis exploratorio.
+
+Novedades v1.1.2 (ver 04_Reports/Technical/20260706_Sync_Portable_Localhost_T3_TPH.md):
+- Documentos de empaquetado (README_USUARIO, GUIA_RAPIDA_VALIDACION,
+  FORMULARIO_FEEDBACK_VALIDACION, VERSION.txt, QA_CHECKLIST.md) ahora
+  viven en 05_Dashboard/packaging/ como fuente unica de verdad -
+  NUNCA editar las copias dentro de dist/Gemelo_Digital_Molienda/.
+- T3 siempre en TPH (nunca %) en tarjetas, gráficos y documentacion.
+- Nueva pestana "Balance T1/T3": grafica T1, CV315, CV316 y T3 en TPH.
+- Alerta explicita "Asignacion invalida: CV315 + CV316 supera T1
+  disponible." en la tarjeta de Transferencia T1.
+- Nuevo test test_t3_tph_balance.py (6 tests, incluye los 4 casos de
+  validacion pedidos + invariante de balance de masa).
+
+Novedades v1.1.1:
+- README_USUARIO actualizado: seccion "que hacer si no abre",
+  instrucciones correctas de cierre (navegador + consola), aviso de alcance
+- GUIA_RAPIDA_VALIDACION.pdf: 5 pruebas guiadas para el validador
+- FORMULARIO_FEEDBACK_VALIDACION.xlsx/.md: formulario estructurado de retorno
+
+Cambios de performance (ver 04_Reports/Technical/20260706_Performance_Optimization_EXE.md):
+- Cache por escenario: repetir un escenario ya visto no recalcula
+- Monte Carlo/optimizador ya no corren automaticamente con cada slider,
+  solo al presionar el boton correspondiente
+- Empaquetado --onedir: apertura medida en ~2-13s
+
+QA (ver 04_Reports/Technical/20260706_QA_Portable_v1_1_0.md,
+20260706_PostQA_Portable_v1_1_1.md y 20260706_Sync_Portable_Localhost_T3_TPH.md):
+- 43 tests unitarios (36 base + regresion mantencion 24h + 6 balance T3)
+- Bug corregido: mantencion de dia completo [0,24] se ignoraba silenciosamente
+  (engine/scheduler.py, hour_in_window)

@@ -1,0 +1,156 @@
+# ============================================================
+#  Configuración central — Plataforma Analítica de Molienda
+#  División El Teniente — Codelco
+# ============================================================
+
+proyecto:
+  nombre: "Análisis Rendimientos SAG/PMC/MUN"
+  version: "2.0.0"
+  autor: "CIO DET — Analítica"
+
+# ── Rutas de datos ────────────────────────────────────────
+rutas:
+  # Relativa a la raiz del repo (ver 07_Config/paths.yaml) — NO usar rutas absolutas
+  base: "."
+
+  # Fuentes primarias (nueva estructura)
+  pam_produccion_nuevo:  "data/raw/PAM_Produccion"
+  pam_mantto_nuevo:      "data/raw/PAM_Mantto"
+  rendimientos_nuevo:    "data/raw/Rendimientos"
+
+  # Fuentes legacy (estructura anterior — fallback automático)
+  pam_produccion_legacy: "PAM_Produccion"
+  pam_mantto_legacy:     "PAM_Mantto"
+  rendimientos_legacy:   "rendimientos_coef - copia.xlsx"
+
+  # Salidas
+  intermediate:  "data/intermediate"
+  processed:     "data/processed"
+  outputs_excel: "outputs/excel"
+  outputs_figs:  "outputs/figures"
+  outputs_rpts:  "outputs/reports"
+  logs:          "logs"
+
+# ── Parámetros operacionales ─────────────────────────────
+operacional:
+  tph_threshold: 50.0           # TPH mínimo para considerar activo operando
+  dt_min: 5                     # minutos por período de registro
+
+  activos:
+    SAG1:
+      nombre_completo: "Molino SAG 1"
+      tipo: "SAG"
+      pila: "SAG"
+      tph_min_normal: 1200
+      tph_max_normal: 2500
+    SAG2:
+      nombre_completo: "Molino SAG 2"
+      tipo: "SAG"
+      pila: "SAG"
+      tph_min_normal: 1200
+      tph_max_normal: 2500
+    PMC:
+      nombre_completo: "Molienda Convencional (Mol. 1-12)"
+      tipo: "Convencional"
+      pila: "Conv"
+      tph_min_normal: 500
+      tph_max_normal: 1800
+    MUN:
+      nombre_completo: "Molino Unitario (Mol. 13)"
+      tipo: "Unitario"
+      pila: "Conv"
+      tph_min_normal: 600
+      tph_max_normal: 1000
+
+# ── Mapeo de columnas PAM Producción ─────────────────────
+mapeo_pam_produccion:
+  "SAG 1":     "SAG1"
+  "SAG 2":     "SAG2"
+  "MOL 1 -12": "PMC"
+  "MOL 1-12":  "PMC"
+  "MOL 13":    "MUN"
+  "MOL13":     "MUN"
+
+# ── Keywords Teniente 8 en PAM Mantto ────────────────────
+t8_keywords:
+  - "teniente 8"
+  - "teniente8"
+  - "t-8"
+  - "teniente  8"
+  - "ventana tunel"
+  - "ferrocarril"
+
+# ── Parámetros de análisis pre/post ──────────────────────
+analisis_ventanas:
+  ventanas_horas: [24, 48, 72]   # horas de análisis pre y post
+  gap_max_dias: 2                 # días máx de gap para agrupar ventanas T8
+
+# ── Modelos ─────────────────────────────────────────────
+modelos:
+
+  baseline:
+    window_horas: 4               # ventana rolling para baseline
+
+  changepoint:
+    modelo: "rbf"                 # modelo ruptures
+    min_size_periodos: 12         # mínimo 1 hora entre quiebres
+    penalizacion: 10              # penalización PELT
+
+  anomalia:
+    contamination: 0.05           # fracción de anomalías esperada
+    n_estimators: 100
+    random_state: 42
+
+  clustering:
+    n_clusters: 4
+    random_state: 42
+    etiquetas:
+      0: "Normal"
+      1: "Inestable"
+      2: "Degradado"
+      3: "Recuperación"
+
+  xgboost:
+    n_estimators: 300
+    learning_rate: 0.05
+    max_depth: 6
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+    early_stopping_rounds: 20
+    n_splits_tscv: 5
+    horizontes_horas: [1, 4, 12, 24]
+
+  bayesiano:
+    prior_alpha: 1.0             # prior Beta para probabilidad de caída
+    prior_beta: 1.0
+    n_bootstrap: 5000
+    credibilidad: 0.90           # intervalo de credibilidad
+
+# ── Índice Global de Impacto (IGI T8) ───────────────────
+igi_t8:
+  pesos:
+    caida_tph: 0.40
+    recuperacion: 0.30
+    desv_programa: 0.20
+    duracion: 0.10
+  referencias:
+    caida_max_pct: 50
+    recuperacion_max_h: 48
+    desv_max_pct: 30
+    duracion_max_h: 72
+
+# ── Visualización ────────────────────────────────────────
+visualizacion:
+  dpi: 120
+  figsize_serie: [16, 4]
+  colores:
+    SAG1: "#1f77b4"
+    SAG2: "#ff7f0e"
+    PMC:  "#2ca02c"
+    MUN:  "#d62728"
+    t8_ventana: "#ef5350"
+    pre:  "#2196F3"
+    durante: "#F44336"
+    post: "#4CAF50"
+    normal: "#9E9E9E"

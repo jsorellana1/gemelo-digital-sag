@@ -1,0 +1,106 @@
+# rules_config.yaml — Reglas operacionales validadas Sistema Molienda SAG T8
+
+assets:
+  SAG1:
+    p90_tph: 1454
+    critical_pct: 15.0
+    drain_pct_h: 23.76
+    cap_efectiva_ton: 4575
+    risk_threshold_pct: 18.0
+
+  SAG2:
+    p90_tph: 2516
+    critical_pct: 18.2
+    drain_pct_h: 6.18
+    cap_efectiva_ton: 32009
+    risk_threshold_pct: 18.0
+
+  PMC:
+    p90_tph: 1460
+
+  UNITARIO:
+    p90_tph: 834
+
+correa_315:
+  inactive_fraction: 0.49  # ~49% del tiempo inactiva (restriccion estructural)
+
+autonomia:
+  alarm_high_h: 2.5
+  alarm_critical_h: 1.0
+
+iro:
+  weights:
+    inventario: 0.25
+    autonomia: 0.30
+    rate: 0.20
+    t8: 0.15
+    correa: 0.10
+  autonomia_normalization_h: 4.0
+
+regime_rate_bounds:
+  SAG1:
+    EMERGENCIA: [0.50, 0.64]
+    CONSERVADOR: [0.58, 0.78]
+    NORMAL: [0.72, 0.95]
+    AGRESIVO: [0.87, 1.05]
+  SAG2:
+    EMERGENCIA: [0.68, 0.82]
+    CONSERVADOR: [0.76, 0.94]
+    NORMAL: [0.82, 1.00]
+    AGRESIVO: [0.90, 1.05]
+
+dose_response:
+  SAG1:
+    durations_h: [2, 4, 12]
+    median_pct: [108, 69, 44]
+    n_events: [11, 29, 2]
+  SAG2:
+    durations_h: [2, 4, 12]
+    median_pct: [98, 99, 85]
+    n_events: [18, 38, 3]
+  PMC:
+    durations_h: [2, 4, 12]
+    median_pct: [97, 85, 89]
+    n_events: [16, 43, 3]
+  UNITARIO:
+    durations_h: [2, 4, 12]
+    median_pct: [96, 100, 95]
+    n_events: [7, 17, 2]
+
+operational_rules:
+  - id: R01
+    severity: green
+    title: "Iniciar T8 con pila > 40%"
+    description: "Pila SAG1 y SAG2 sobre 40% garantiza autonomia minima de 4h en SAG2 y 1.05h en SAG1 para T8 larga."
+  - id: R02
+    severity: green
+    title: "Rate optimo: 82-95% P90"
+    description: "Operar en banda 82-95% P90 maximiza tonelaje total y minimiza riesgo critico de pila."
+  - id: R03
+    severity: green
+    title: "Ambas correas activas durante T8 prolongado"
+    description: "Si T8 > 4h, mantener correa 316 activa para alimentacion alternativa a SAG2."
+  - id: R04
+    severity: orange
+    title: "Correa 315 inactiva ~49% del tiempo"
+    description: "Restriccion estructural: planificar T8 preferentemente cuando correa 315 esta activa."
+  - id: R05
+    severity: orange
+    title: "SAG1 se drena rapido (23.76%/h)"
+    description: "SAG1 tiene autonomia critica muy corta. Reducir rate al llegar a 25% de pila."
+  - id: R06
+    severity: orange
+    title: "Activar bolas para compensar caida T8"
+    description: "Molinos de bola aportan +8% TPH por circuito; activar en cuanto inicia T8 > 2h."
+  - id: R07
+    severity: red
+    title: "No operar SAG1 bajo 15% de pila"
+    description: "Nivel critico: opera en minimo tecnico o detener para evitar dano a revestimiento."
+  - id: R08
+    severity: red
+    title: "Impacto severo SAG1 a partir de 4h T8"
+    description: "SAG1 cae a 69% P90 a las 4h; planificar compensacion con SAG2 si esta disponible."
+  - id: R09
+    severity: red
+    title: "Autonomia SAG2 < 1h requiere accion inmediata"
+    description: "SAG2 bajo 1h de autonomia: detener alimentacion discrecional y escalar a operaciones."

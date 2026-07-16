@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/05_Dashboard/.venv/Scripts/python.exe",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.cwd": "${workspaceFolder}/05_Dashboard",
+  "python.testing.pytestArgs": [
+    "tests",
+    "--ignore=tests/test_portable_smoke.py",
+    "--ignore=tests/test_performance_portable.py"
+  ]
+}

@@ -1,0 +1,28 @@
+# Umbrales operacionales — División El Teniente / Molienda SAG
+# Fuente: calibración con 70 eventos T8 reales
+
+sag1:
+  capacidad_ton: 4575
+  critico_pct: 15.0        # % mínimo antes de riesgo crítico
+  tph_min: 700
+  tph_max: 1550
+  tph_nominal: 1236
+
+sag2:
+  capacidad_ton: 32009
+  critico_pct: 18.2        # % mínimo antes de riesgo crítico
+  tph_min: 1200
+  tph_max: 2650
+  tph_nominal: 2214
+
+autonomia:
+  critica_h: 2.0           # < 2h = riesgo crítico de detención
+  alerta_h: 4.0
+
+# Riesgo MH calibrado por duración de T8
+riesgo_mh_por_duracion:
+  0h: 0.005
+  2h: 0.008
+  4h: 0.058
+  8h: 0.300
+  12h: 0.415

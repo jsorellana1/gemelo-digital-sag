@@ -1,0 +1,16 @@
+# Configuración del Dashboard Operacional — Molienda SAG
+host: 0.0.0.0
+port: 8050
+debug: false
+use_reloader: false        # CRÍTICO: false en Windows para evitar procesos duplicados
+
+# Apariencia
+title: "Molienda SAG — Centro de Control"
+theme: BOOTSTRAP
+
+# Simulación
+mc_n_simulations: 500      # N suficiente para MC operacional (no escalar sin justificación)
+sim_horizon_default_h: 24  # horas por defecto
+
+# Caché de datos
+cache_ttl_s: 300           # refrescar parquets cada 5 minutos

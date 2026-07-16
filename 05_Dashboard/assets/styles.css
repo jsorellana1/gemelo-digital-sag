@@ -1,0 +1,664 @@
+/* ============================================================
+   styles.css — Dashboard Molienda SAG T8 | Codelco El Teniente
+   ============================================================ */
+
+/* Paleta TDA (Plataforma TDA_Diseño_Visual_Elegido.html, 2026-07-07) —
+   unica parte legible del template (el resto es un bundle JS
+   compilado): wireframe SVG de carga con panel #0F2647, borde #1a3a6c,
+   fondo #07162F, texto #F0F4FA, muted #8896AF, y semaforo
+   verde/ambar/rojo/azul. Ver 04_Reports/Technical/
+   20260707_Template_TDA_Mapping.md para el detalle de que se pudo y
+   que no se pudo extraer del archivo. */
+:root {
+  --azul:       #F0F4FA;
+  --azul-med:   #4FB0E5;
+  --verde:      #4FCE82;
+  --naranja:    #E8935A;
+  --rojo:       #E94A4A;
+  --amarillo:   #E5BB3E;
+  --bg:         #07162F;
+  --card-bg:    #0F2647;
+  --card-border: #1a3a6c;
+  --text-dark:  #F0F4FA;
+  --text-muted: #8896AF;
+}
+
+body {
+  background-color: var(--bg);
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-dark);
+}
+
+/* ── Causa raiz de "texto invisible" reportada 2026-07-07 ─────────────
+   Bootstrap 5 (dbc.themes.BOOTSTRAP) no hereda color de `body` en la
+   mayoria de sus componentes — cada uno lee sus PROPIAS variables CSS
+   (--bs-form-check-label-color, --bs-accordion-btn-color, --bs-table-
+   color, etc.), definidas para tema claro y con mayor especificidad que
+   un simple "color: var(--text-dark)" en `body`. Por eso las opciones
+   de los RadioItems/Switch, los headers de accordion colapsados, y las
+   filas de tablas quedaban practicamente invisibles (texto oscuro por
+   defecto de Bootstrap sobre el nuevo fondo oscuro). Se sobreescriben
+   las variables de Bootstrap directamente en vez de pelear componente
+   por componente — mismo mecanismo que usa Bootstrap internamente. */
+:root,
+[data-bs-theme="dark"] {
+  --bs-body-color: var(--text-dark);
+  --bs-body-bg: var(--bg);
+  --bs-secondary-color: var(--text-muted);
+  --bs-border-color: var(--card-border);
+
+  --bs-form-check-label-color: var(--text-dark, #F0F4FA);
+
+  --bs-accordion-color: var(--text-dark);
+  --bs-accordion-bg: var(--card-bg);
+  --bs-accordion-border-color: var(--card-border);
+  --bs-accordion-btn-color: var(--text-dark);
+  --bs-accordion-btn-bg: var(--card-bg);
+  --bs-accordion-active-color: var(--azul-med);
+  --bs-accordion-active-bg: #123059;
+
+  --bs-table-color: var(--text-dark);
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--card-border);
+  --bs-table-striped-color: var(--text-dark);
+  --bs-table-striped-bg: rgba(79,176,229,0.05);
+  --bs-table-hover-color: var(--text-dark);
+  --bs-table-hover-bg: rgba(79,176,229,0.08);
+
+  --bs-card-color: var(--text-dark);
+  --bs-card-bg: var(--card-bg);
+  --bs-card-border-color: var(--card-border);
+
+  --bs-tabs-link-color: var(--text-muted);
+  --bs-tabs-link-active-color: var(--azul-med);
+  --bs-tabs-link-active-bg: var(--card-bg);
+}
+
+/* Modo claro (Fase 4/5, 2026-07-07): el bloque de arriba (:root /
+   [data-bs-theme="dark"]) fija SIEMPRE valores oscuros porque :root
+   coincide sin condicion — sin este bloque, alternar a modo claro
+   dejaba los graficos/tarjetas Python en paleta clara pero los
+   componentes Bootstrap (form-check, accordion, table) seguian
+   forzados a oscuro, reproduciendo el mismo bug de contraste que
+   motivo esta auditoria. app.py escribe el atributo
+   data-bs-theme="light" en el Div raiz del layout segun
+   utils.theme_state.get_theme(); las custom properties de CSS heredan
+   hacia los descendientes de ese Div sin importar donde se declaren. */
+[data-bs-theme="light"] {
+  --azul:       #1F3864;
+  --azul-med:   #1A5E99;
+  --verde:      #27AE60;
+  --naranja:    #E67E22;
+  --rojo:       #C0392B;
+  --amarillo:   #F39C12;
+  --bg:         #F5F7FA;
+  --card-bg:    #FFFFFF;
+  --card-border: #D6E0E8;
+  --text-dark:  #1F3864;
+  --text-muted: #7F8C8D;
+
+  --bs-body-color: var(--text-dark);
+  --bs-body-bg: var(--bg);
+  --bs-secondary-color: var(--text-muted);
+  --bs-border-color: var(--card-border);
+
+  --bs-form-check-label-color: var(--text-dark);
+
+  --bs-accordion-color: var(--text-dark);
+  --bs-accordion-bg: var(--card-bg);
+  --bs-accordion-border-color: var(--card-border);
+  --bs-accordion-btn-color: var(--text-dark);
+  --bs-accordion-btn-bg: var(--card-bg);
+  --bs-accordion-active-color: var(--azul-med);
+  --bs-accordion-active-bg: #EAF2FB;
+
+  --bs-table-color: var(--text-dark);
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--card-border);
+  --bs-table-striped-color: var(--text-dark);
+  --bs-table-striped-bg: rgba(26,94,153,0.04);
+  --bs-table-hover-color: var(--text-dark);
+  --bs-table-hover-bg: rgba(26,94,153,0.07);
+
+  --bs-card-color: var(--text-dark);
+  --bs-card-bg: var(--card-bg);
+  --bs-card-border-color: var(--card-border);
+
+  --bs-tabs-link-color: var(--text-muted);
+  --bs-tabs-link-active-color: var(--azul-med);
+  --bs-tabs-link-active-bg: var(--card-bg);
+}
+[data-bs-theme="light"] .accordion-button::after {
+  filter: none;
+}
+
+/* Form checks (RadioItems/Checklist/Switch) y sus labels — algunos
+   navegadores no resuelven --bs-form-check-label-color sin esto. */
+.form-check-label {
+  color: var(--text-dark) !important;
+}
+/* 2026-07-07: los dbc.Switch de "Estado de molinos SAG" parten en
+   value=True (checked) y solo se estilaba el estado :not(:checked) —
+   el estado :checked quedaba con el fondo blanco por defecto de
+   Bootstrap (el "cuadrado blanco" reportado), ya que el track del
+   switch es un rectangulo con esquinas redondeadas, no un circulo. */
+.form-check-input {
+  background-color: var(--card-bg);
+  border-color: var(--azul-med);
+}
+.form-check-input:checked {
+  background-color: var(--azul-med);
+  border-color: var(--azul-med);
+}
+.form-check-input:focus {
+  border-color: var(--azul-med);
+  box-shadow: 0 0 0 0.2rem rgba(79,176,229,0.25);
+}
+
+/* Accordion: el estado colapsado usa un icono/chevron oscuro por
+   defecto (SVG con stroke fijo) — se invierte con filter para que se
+   vea sobre fondo oscuro. */
+.accordion-button::after {
+  filter: invert(1) brightness(1.8);
+}
+
+/* dcc.Graph go.Table (Plotly) no lee CSS — sus colores de celda se
+   fijan en Python (components/graphs.py). Este bloque cubre solo el
+   contenedor HTML alrededor, no el <svg> del propio Plotly. */
+.js-plotly-plot .plotly {
+  background-color: transparent;
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.nav-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 6px 14px !important;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: rgba(255,255,255,0.15);
+}
+
+.nav-link.active {
+  background-color: rgba(255,255,255,0.25);
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.kpi-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  box-shadow: 0 3px 12px rgba(0,0,0,0.14);
+}
+
+.card {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+/* ── Sliders ─────────────────────────────────────────────── */
+/* 2026-07-07 (2a pasada): el intento anterior de arreglar el
+   contraste apuntaba a clases de rc-slider (.rc-slider-rail,
+   .rc-slider-handle, .rc-slider-tooltip-inner, etc.), pero dash 4.3.0
+   (instalado en este proyecto) reemplazo el Slider/RangeSlider por un
+   componente propio basado en Radix que usa OTRAS clases
+   (.dash-slider-*) y fija sus colores via custom properties propias
+   de Dash (--Dash-Fill-Inverse-Strong, --Dash-Text-Strong, etc. —
+   ver dash/dcc/dash_core_components.js). Ninguna regla anterior
+   coincidia con el DOM real, por eso no tenia efecto.
+   Esas custom properties de Dash vienen CON VALORES FIJOS pensados
+   solo para fondo claro (--Dash-Fill-Inverse-Strong: #fff,
+   --Dash-Text-Strong: rgba(0,9,38,.9) case texto casi negro): el
+   tooltip del valor queda con fondo blanco fijo y texto heredado casi
+   blanco sobre el tema oscuro de esta app -> "cuadrado en blanco sin
+   numero visible" reportado. Las marcas de la regla (0,4,8...24h)
+   usan el mismo texto casi negro, ilegible sobre el card oscuro.
+   Se resuelve reasignando esas custom properties de Dash a las
+   propias del tema (--azul-med/--card-bg/--text-dark/--text-muted),
+   que ya cambian solas entre [data-bs-theme="dark"|"light"] — no hace
+   falta duplicar el bloque por tema. */
+:root {
+  --Dash-Fill-Disabled: rgba(136, 150, 175, 0.35);
+  --Dash-Fill-Interactive-Strong: var(--azul-med);
+  --Dash-Fill-Interactive-Weak: rgba(79, 176, 229, 0.15);
+  --Dash-Fill-Inverse-Strong: var(--card-bg);
+  --Dash-Fill-Primary-Active: var(--text-muted);
+  --Dash-Fill-Primary-Hover: var(--azul-med);
+  --Dash-Shading-Strong: rgba(0, 0, 0, 0.4);
+  --Dash-Shading-Weak: rgba(0, 0, 0, 0.25);
+  --Dash-Stroke-Strong: var(--card-border);
+  --Dash-Stroke-Weak: var(--card-border);
+  --Dash-Text-Disabled: var(--text-muted);
+  --Dash-Text-Primary: var(--text-dark);
+  --Dash-Text-Strong: var(--text-dark);
+  --Dash-Text-Weak: var(--text-muted);
+}
+
+/* El texto del tooltip no trae "color" propio (hereda del ancestro),
+   asi que con --Dash-Fill-Inverse-Strong ya resuelto a var(--card-bg)
+   basta con asegurar que herede var(--text-dark) — mismo par ya
+   usado en el resto de las cards, con contraste probado en ambos
+   temas. Se fuerza con !important por si el bundle de dash inyecta su
+   <style> despues de assets/styles.css. */
+.dash-slider-tooltip {
+  color: var(--text-dark) !important;
+  font-weight: 700;
+  border: 1px solid var(--azul-med);
+}
+
+/* dcc.RangeSlider con tooltip.always_visible=True (ver controls.py,
+   _mant_slider) deja el numero expuesto siempre en vez de solo al
+   arrastrar, para que "Mantenciones programadas" muestre el valor sin
+   depender del hover. Se reserva espacio bajo el riel para que ese
+   bloque no se solape con el siguiente equipo de la lista. */
+.mant-slider {
+  margin-bottom: 22px !important;
+}
+
+/* ── Page title ──────────────────────────────────────────── */
+.page-title {
+  color: var(--azul);
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-bottom: 2px solid var(--azul-med);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+/* ── Section headers ─────────────────────────────────────── */
+.section-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--azul);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+/* ── Rule cards ──────────────────────────────────────────── */
+.rule-card-green {
+  border-left: 4px solid var(--verde);
+}
+.rule-card-orange {
+  border-left: 4px solid var(--naranja);
+}
+.rule-card-red {
+  border-left: 4px solid var(--rojo);
+}
+
+/* ── Rediseño JdS (2026-07-13): bloque 6.1 estado general + 6.6 quick win ── */
+.estado-general-banner {
+  border-top-width: 5px !important;
+  box-shadow: 0 6px 16px rgba(31,56,100,0.10);
+}
+.quick-win-card {
+  box-shadow: 0 6px 16px rgba(79,206,130,0.12);
+}
+
+/* ── Autonomia badges ─────────────────────────────────────── */
+.badge-ok     { background-color: var(--verde);    color: white; font-size: 0.9rem; padding: 4px 10px; border-radius: 12px; }
+.badge-warn   { background-color: var(--amarillo); color: white; font-size: 0.9rem; padding: 4px 10px; border-radius: 12px; }
+.badge-crit   { background-color: var(--rojo);     color: white; font-size: 0.9rem; padding: 4px 10px; border-radius: 12px; }
+
+/* ── Progress bar colors ─────────────────────────────────── */
+.bg-27ae60 { background-color: var(--verde) !important; }
+.bg-f39c12 { background-color: var(--amarillo) !important; }
+.bg-e67e22 { background-color: var(--naranja) !important; }
+.bg-c0392b { background-color: var(--rojo) !important; }
+
+/* ── Loading spinner ─────────────────────────────────────── */
+._dash-loading {
+  background-color: rgba(15,38,71,0.85) !important;
+  color: var(--text-dark) !important;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-thumb { background: var(--azul-med); border-radius: 4px; }
+::-webkit-scrollbar-track { background: var(--card-border); }
+
+/* ── Tab content ─────────────────────────────────────────── */
+.tab-content {
+  padding-top: 12px;
+}
+
+/* ── Responsive tweak ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-title { font-size: 0.95rem; }
+}
+
+.sim-page-subtitle {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: -6px;
+}
+
+/* 2026-07-07: se saco "position: sticky" — el header pegado hacia que el
+   contenido de mas abajo se recortara/solapara visualmente al hacer
+   scroll (reportado como "se ve desordenado" / "headers que confunden").
+   Ahora scrollea en flujo normal como el resto de la pagina. */
+#sim-summary-bar {
+  background: linear-gradient(180deg, rgba(7,22,47,0.96), rgba(7,22,47,0.82));
+  padding-top: 4px;
+}
+
+.sim-sidebar-card,
+.sim-main-card,
+.sim-secondary-card,
+.sim-compare-card {
+  border-radius: 12px;
+}
+
+.sim-sidebar-header {
+  background: linear-gradient(135deg, rgba(79,176,229,0.10), rgba(79,176,229,0.03));
+  border: 1px solid rgba(79,176,229,0.12);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.sim-sidebar-title {
+  color: var(--azul);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.sim-sidebar-subtitle {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.sim-sidebar-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.sim-action-btn {
+  width: 100%;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+}
+
+.sim-sidebar-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.sim-control-section {
+  padding: 2px 0 4px 0;
+}
+
+.sim-mini-label {
+  color: var(--azul-med);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sim-main-card .card-body,
+.sim-secondary-card .card-body {
+  background: linear-gradient(180deg, rgba(15,38,71,0.98), rgba(7,22,47,0.96));
+}
+
+.sim-main-graph {
+  min-height: 420px;
+}
+
+.sim-secondary-tabs .nav-link {
+  color: var(--azul-med);
+  background: rgba(79,176,229,0.06);
+  border: 1px solid rgba(79,176,229,0.10);
+  margin-right: 6px;
+}
+
+.sim-secondary-tabs .nav-link.active {
+  background: var(--azul-med);
+  color: #07162F;
+}
+
+/* 2026-07-14 (auditoria de contraste sobre captura real de la app):
+   con la seccion EXPANDIDA (":not(.collapsed)"), Bootstrap aplica
+   --bs-accordion-active-color (azul-med) sobre --bs-accordion-active-bg
+   — normalmente legible, pero en la practica el titulo ("SAG", "Bolas",
+   etc.) se veia casi invisible en captura real. Se fija el color
+   explicitamente en AMBOS estados (con !important, para no depender del
+   orden de carga entre el bundle de dash-bootstrap-components y este
+   archivo) en vez de confiar en que las custom properties de Bootstrap
+   se resuelvan como se espera. */
+.sim-detail-accordion .accordion-button,
+.sim-control-accordion .accordion-button,
+.sim-detail-accordion .accordion-button:not(.collapsed),
+.sim-control-accordion .accordion-button:not(.collapsed) {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--azul) !important;
+  background: #123059;
+}
+
+.sim-detail-accordion .accordion-body,
+.sim-control-accordion .accordion-body {
+  background: var(--card-bg);
+}
+
+.sim-summary-card .card-body {
+  background:
+    radial-gradient(circle at top right, rgba(79,176,229,0.10), transparent 55%),
+    linear-gradient(180deg, rgba(15,38,71,1), rgba(11,30,63,1));
+}
+
+@media (min-width: 1200px) {
+  .sim-sidebar-actions {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .sim-sidebar-card {
+    margin-bottom: 12px;
+  }
+}
+
+/* ============================================================
+   Centro de Control Operacional — Estado del Escenario / Gantt
+   Bloques nuevos deben caber en la primera pantalla sin scroll
+   excesivo (Cambio 11): margenes compactos, sin tocar paleta.
+   ============================================================ */
+.sim-page-subtitle + div .card {
+  margin-bottom: 6px;
+}
+
+#graph-gantt-operacional {
+  min-height: 300px;
+}
+
+/* ============================================================
+   Navegacion interna del Simulador Operacional (rediseno
+   2026-07-14, ver 04_Reports/Technical/
+   20260714_Rediseno_Navegacion_UX_Simulador.md).
+
+   IMPORTANTE: NO reutilizar #sim-summary-bar para sticky — el
+   2026-07-07 se quito position:sticky de ahi porque superponia y
+   recortaba contenido inferior (ver comentario mas arriba en este
+   archivo). Esta barra es un componente propio, aislado, con su
+   propio fondo opaco y z-index, para no repetir ese bug.
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+}
+
+.dashboard-section {
+  scroll-margin-top: 56px;
+}
+
+.simulation-section-nav.sticky-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.simulation-section-nav-link {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--azul-med);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.simulation-section-nav-link:hover,
+.simulation-section-nav-link:focus-visible {
+  background: rgba(79,176,229,0.14);
+  color: var(--azul);
+  outline: none;
+}
+
+/* En pantallas angostas (1366x768 y menores) la barra se vuelve
+   desplazable horizontalmente en vez de apilarse en varias filas —
+   Fase 10, seccion 29 del pedido. */
+@media (max-width: 1400px) {
+  .simulation-section-nav.sticky-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+}
+
+/* Pestanas del grafico principal (sim-main-view) — mismo tratamiento
+   de scroll horizontal que la barra de navegacion, para no romper el
+   layout en 1366x768 con 10 opciones inline. */
+.sim-chart-tabs {
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
+  padding-bottom: 2px;
+}
+
+.sim-main-graph {
+  height: clamp(420px, 58vh, 680px);
+}
+
+.sim-back-to-top-wrapper {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  z-index: 1040;
+}
+
+.sim-back-to-top-wrapper.d-none {
+  display: none !important;
+}
+
+.sim-back-to-top {
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  background: var(--azul-med);
+  border: none;
+  color: #07162F;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+.sim-back-to-chart-link {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--azul-med);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.sim-back-to-chart-link:hover {
+  text-decoration: underline;
+}
+
+/* Nota: el modo claro de esta app se aplica server-side (Python
+   reasigna constantes de color por modulo antes de generar cada
+   figura/tarjeta, ver utils/theme_state.py) — no via un atributo
+   data-theme en el DOM. Estos componentes CSS-only (barra sticky,
+   boton volver arriba) comparten la misma limitacion ya documentada
+   en 04_Reports/Technical/20260707_Modo_Claro_Oscuro.md: se ven
+   correctos en modo oscuro (el default), modo claro completo para
+   ellos requeriria el mismo trabajo pendiente ya declarado ahi. */
+
+/* ============================================================
+   Segunda iteración UX/UI (2026-07-14) — bloque de decisión
+   principal, chip de circuito, tarjeta de confianza, selectores.
+   ============================================================ */
+.decision-banner-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.decision-banner-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  margin-bottom: 8px;
+}
+
+.decision-banner-field {
+  white-space: nowrap;
+}
+
+.decision-banner-action {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--azul);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.decision-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sim-circuit-selector .form-check,
+.sim-chart-category-selector .form-check {
+  display: inline-block;
+}
+
+/* Selector de categoria de grafico: etiquetas tipo pastilla, para
+   diferenciarlo visualmente del selector de vistas (sim-chart-tabs)
+   que agrupa por debajo. */
+.sim-chart-category-selector label {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  margin-right: 6px !important;
+}
