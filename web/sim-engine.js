@@ -17,6 +17,14 @@ const PY_FILES = [
 
 const P90 = { SAG1: 1454.0, SAG2: 2516.0 };
 
+// Adaptador legado (unica fuente de conversion): la UI, los escenarios y las
+// recomendaciones hablan siempre en TPH. Este helper solo alimenta el
+// argumento posicional rate_sagX_pct que simulate_scenario aun requiere por
+// compatibilidad -- el valor real usado por el motor es rate_sagX_tph.
+function rateTphToPct(rateTph, asset) {
+  return (100.0 * rateTph) / P90[asset];
+}
+
 const statusEl = document.getElementById("status");
 const runBtn = document.getElementById("run");
 let pyodideReady = null;
@@ -80,7 +88,7 @@ function bindDual(id) {
 }
 
 const DUAL_IDS = [
-  "pila_sag1_pct", "pila_sag2_pct", "rate_sag1_pct", "rate_sag2_pct",
+  "pila_sag1_pct", "pila_sag2_pct", "rate_sag1_tph", "rate_sag2_tph",
   "cv315_manual_tph", "cv316_manual_tph", "t1_manual_tph", "t3_frac_pct",
   "duracion_t8_h", "horizonte_horas",
   "feed_recovery_time_min", "sag_ramp_up_time_min", "sag_ramp_down_time_min",
@@ -104,11 +112,20 @@ function radioValue(name) {
 }
 
 function collectParams() {
+  // Contrato de rates: la UI y los escenarios hablan siempre en TPH (regla
+  // obligatoria). rate_sag1_pct/rate_sag2_pct son argumentos posicionales
+  // requeridos por simulate_scenario (compatibilidad legada) pero quedan
+  // sobreescritos por rate_sag1_tph/rate_sag2_tph cuando este ultimo se
+  // entrega -- ver rate_tph_to_pct() abajo, adaptador interno unico.
+  const rate1Tph = parseFloat(document.getElementById("rate_sag1_tph").value);
+  const rate2Tph = parseFloat(document.getElementById("rate_sag2_tph").value);
   return {
     pila_sag1_pct: parseFloat(document.getElementById("pila_sag1_pct").value),
     pila_sag2_pct: parseFloat(document.getElementById("pila_sag2_pct").value),
-    rate_sag1_pct: parseFloat(document.getElementById("rate_sag1_pct").value),
-    rate_sag2_pct: parseFloat(document.getElementById("rate_sag2_pct").value),
+    rate_sag1_pct: rateTphToPct(rate1Tph, "SAG1"),
+    rate_sag2_pct: rateTphToPct(rate2Tph, "SAG2"),
+    rate_sag1_tph: rate1Tph,
+    rate_sag2_tph: rate2Tph,
     sag1_activo: document.getElementById("sag1_activo").checked,
     sag2_activo: document.getElementById("sag2_activo").checked,
     ch1_on: document.getElementById("ch1_on").checked,
@@ -145,6 +162,10 @@ function renderKpis(result) {
   const lastPila1 = result.pile_sag1.at(-1);
   const lastPila2 = result.pile_sag2.at(-1);
   const items = [
+    ["TPH SAG1 solicitado", result.rate_sag1_tph_actual.toFixed(0) + " TPH"],
+    ["TPH SAG1 efectivo", result.tph_sag1[0].toFixed(0) + " TPH"],
+    ["TPH SAG2 solicitado", result.rate_sag2_tph_actual.toFixed(0) + " TPH"],
+    ["TPH SAG2 efectivo", result.tph_sag2[0].toFixed(0) + " TPH"],
     ["Pila SAG1 final", lastPila1.toFixed(1) + " %"],
     ["Pila SAG2 final", lastPila2.toFixed(1) + " %"],
     ["Autonomia SAG1", lastAutonomia1 == null ? "-" : lastAutonomia1.toFixed(1) + " h"],
